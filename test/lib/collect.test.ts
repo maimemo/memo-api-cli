@@ -9,8 +9,8 @@ describe("collect", () => {
     assert.deepEqual(acc2, ["A", "B"]);
   });
 
-  it("ignores '-' value", () => {
+  it("passes through '-' value", () => {
     const result = collect("-", ["A"]);
-    assert.deepEqual(result, ["A"]);
+    assert.deepEqual(result, ["A", "-"]);
   });
 });

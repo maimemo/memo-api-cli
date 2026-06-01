@@ -2,6 +2,11 @@ import chalk from "chalk";
 import stringWidth from "string-width";
 import { DEFAULT_FIELDS } from "./lib/default-fields.js";
 
+process.stdout.on("error", (err: NodeJS.ErrnoException) => {
+  if (err.code === "EPIPE") process.exit(0);
+  throw err;
+});
+
 let useColor = true;
 let showHeader = true;
 let selectedFields: string[] = [];
@@ -64,7 +69,7 @@ export function printInfo(message: string): void {
 
 function flattenValue(v: unknown): string {
   if (v === null || v === undefined) return "";
-  if (Array.isArray(v)) return v.map(flattenValue).join(", ");
+  if (Array.isArray(v)) return JSON.stringify(v);
   if (typeof v === "object") return JSON.stringify(v);
   return String(v);
 }
@@ -155,8 +160,8 @@ export function printColumns(rows: Record<string, unknown>[], entity?: string): 
 
   if (showHeader) {
     const header = useColor
-      ? keys.map((k, i) => chalk.bold(padCell(k, widths[i]!))).join("\t")
-      : keys.map((k, i) => padCell(k, widths[i]!)).join("\t");
+      ? keys.map((k, i) => padCell(chalk.bold(k), widths[i]!)).join("\t").trimEnd()
+      : keys.map((k, i) => padCell(k, widths[i]!)).join("\t").trimEnd();
     process.stdout.write(header + "\n");
   }
 
@@ -164,6 +169,6 @@ export function printColumns(rows: Record<string, unknown>[], entity?: string): 
     const line = keys
       .map((k, i) => padCell(formatCell(toDisplayValue(row[k], k), perColumnMax), widths[i]!))
       .join("\t");
-    process.stdout.write(line + "\n");
+    process.stdout.write(line.trimEnd() + "\n");
   }
 }

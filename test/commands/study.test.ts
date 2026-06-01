@@ -63,30 +63,7 @@ describe("study commands (integration)", () => {
       assert.equal(res.added_count, 1);
     });
 
-    it("adds words by spelling", async () => {
-      mockAgent
-        .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/study/add_words", method: "POST" })
-        .reply(200, (opts: { body?: string }) => {
-          const body = opts.body ? JSON.parse(opts.body) : {};
-          assert.deepEqual(body.words, [{ spelling: "apple" }]);
-          assert.equal(body.advance, false);
-          return wrap({ added_count: 1 });
-        });
-
-      const res = await api<{ added_count: number }>(
-        "/api/v1/study/add_words",
-        {
-          method: "POST",
-          body: { words: [{ spelling: "apple" }], advance: false },
-        },
-        "token",
-      );
-
-      assert.equal(res.added_count, 1);
-    });
-
-    it("adds words by both id and spelling", async () => {
+    it("adds multiple words", async () => {
       mockAgent
         .get("https://open.maimemo.com")
         .intercept({ path: "/open/api/v1/study/add_words", method: "POST" })
@@ -94,8 +71,8 @@ describe("study commands (integration)", () => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.deepEqual(body.words, [
             { id: "voc123" },
-            { spelling: "apple" },
-            { spelling: "banana" },
+            { id: "voc456" },
+            { id: "voc789" },
           ]);
           return wrap({ added_count: 3 });
         });
@@ -105,11 +82,7 @@ describe("study commands (integration)", () => {
         {
           method: "POST",
           body: {
-            words: [
-              { id: "voc123" },
-              { spelling: "apple" },
-              { spelling: "banana" },
-            ],
+            words: [{ id: "voc123" }, { id: "voc456" }, { id: "voc789" }],
             advance: false,
           },
         },
@@ -134,7 +107,7 @@ describe("study commands (integration)", () => {
         {
           method: "POST",
           body: {
-            words: [{ spelling: "happy" }, { spelling: "sad" }],
+            words: [{ id: "voc1" }, { id: "voc2" }],
             advance: true,
           },
         },
@@ -197,57 +170,35 @@ describe("study commands (integration)", () => {
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.deepEqual(body.voc_ids, ["v1", "v2"]);
-          assert.deepEqual(body.spellings, []);
           return wrap({ advanced_count: 2 });
         });
 
       const res = await api<{ advanced_count: number }>(
         "/api/v1/study/advance_study",
-        { method: "POST", body: { voc_ids: ["v1", "v2"], spellings: [] } },
+        { method: "POST", body: { voc_ids: ["v1", "v2"] } },
         "token",
       );
 
       assert.equal(res.advanced_count, 2);
     });
 
-    it("advances study by spellings", async () => {
+    it("advances study by multiple voc_ids", async () => {
       mockAgent
         .get("https://open.maimemo.com")
         .intercept({ path: "/open/api/v1/study/advance_study", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
-          assert.deepEqual(body.voc_ids, []);
-          assert.deepEqual(body.spellings, ["apple", "banana"]);
-          return wrap({ advanced_count: 2 });
+          assert.deepEqual(body.voc_ids, ["v1", "v2", "v3"]);
+          return wrap({ advanced_count: 3 });
         });
 
       const res = await api<{ advanced_count: number }>(
         "/api/v1/study/advance_study",
-        { method: "POST", body: { voc_ids: [], spellings: ["apple", "banana"] } },
+        { method: "POST", body: { voc_ids: ["v1", "v2", "v3"] } },
         "token",
       );
 
-      assert.equal(res.advanced_count, 2);
-    });
-
-    it("advances study by both voc_ids and spellings", async () => {
-      mockAgent
-        .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/study/advance_study", method: "POST" })
-        .reply(200, (opts: { body?: string }) => {
-          const body = opts.body ? JSON.parse(opts.body) : {};
-          assert.deepEqual(body.voc_ids, ["v1"]);
-          assert.deepEqual(body.spellings, ["cherry"]);
-          return wrap({ advanced_count: 2 });
-        });
-
-      const res = await api<{ advanced_count: number }>(
-        "/api/v1/study/advance_study",
-        { method: "POST", body: { voc_ids: ["v1"], spellings: ["cherry"] } },
-        "token",
-      );
-
-      assert.equal(res.advanced_count, 2);
+      assert.equal(res.advanced_count, 3);
     });
   });
 });

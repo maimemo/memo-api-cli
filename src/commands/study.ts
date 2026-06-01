@@ -4,6 +4,7 @@ import { collect } from "../lib/collect.js";
 import { readStdin, tryParseJson } from "../stdin.js";
 import { printJson, printColumns, printError } from "../output.js";
 import { getToken, isJsonOutput, resolveArrayArg } from "../lib/helpers.js";
+import { resolveVocIdsBySpellings } from "../lib/word-resolve.js";
 import type {
   GetStudyProgressResponse,
   GetTodayItemsRequest,
@@ -203,10 +204,13 @@ studyCmd
         printError("错误: 超过最大限制 1000");
         process.exit(1);
       }
+      const resolvedIds = spellings.length > 0
+        ? await resolveVocIdsBySpellings(spellings, token)
+        : [];
       body = {
         words: [
           ...ids.map((id: string) => ({ id })),
-          ...spellings.map((spelling: string) => ({ spelling })),
+          ...resolvedIds.map((id: string) => ({ id })),
         ],
         advance: !!options.advance,
       };
@@ -251,7 +255,10 @@ studyCmd
         printError("错误: 超过最大限制 1000");
         process.exit(1);
       }
-      body = { voc_ids: vocIds, spellings };
+      const resolvedIds = spellings.length > 0
+        ? await resolveVocIdsBySpellings(spellings, token)
+        : [];
+      body = { voc_ids: [...vocIds, ...resolvedIds] };
     }
 
     const res = await api<AdvanceStudyResponse>(

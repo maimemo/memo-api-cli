@@ -36,7 +36,7 @@ export type QueryStudyRecordsResponse = {
 };
 
 export type AddWordsRequest = {
-  words: Array<{ id?: string; spelling?: string }>;
+  words: Array<{ id: string }>;
   advance: boolean;
 };
 
@@ -46,7 +46,6 @@ export type AddWordsResponse = {
 
 export type AdvanceStudyRequest = {
   voc_ids: string[];
-  spellings: string[];
 };
 
 export type AdvanceStudyResponse = {

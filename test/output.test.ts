@@ -48,7 +48,7 @@ describe("output", () => {
         assert.ok(lines[1]!.startsWith("1"));
         assert.ok(lines[1]!.includes("\tfoo"));
         assert.ok(lines[2]!.startsWith("12345"));
-        assert.ok(lines[2]!.includes("\tx") && lines[2]!.split("\t")[1]!.length >= 4);
+        assert.ok(lines[2]!.includes("\tx") && !lines[2]!.endsWith(" "));
       } finally {
         process.stdout.write = original;
       }
@@ -308,7 +308,7 @@ describe("output", () => {
       }
     });
 
-    it("displays array values as comma-separated", () => {
+    it("displays array values as JSON array", () => {
       setColor(false);
       let captured = "";
       const original = process.stdout.write;
@@ -320,7 +320,7 @@ describe("output", () => {
       try {
         printColumns([{ id: "1", tags: ["a", "b", "c"] }]);
         const lines = captured.split("\n").filter(Boolean);
-        assert.ok(lines[1]!.includes("a, b, c"));
+        assert.ok(lines[1]!.includes('["a","b","c"]'));
       } finally {
         process.stdout.write = original;
       }
