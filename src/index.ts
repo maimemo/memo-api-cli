@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Command } from "commander";
 import { noteCmd } from "./commands/note.js";
 import { interpCmd } from "./commands/interp.js";

@@ -1,12 +1,12 @@
 {
   "name": "@maimemo/memo-api",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "墨墨开放 API 命令行工具",
   "license": "MIT",
   "author": "tjt@maimemo.com",
   "type": "module",
   "bin": {
-    "memo-api": "./bin/memo-api.js"
+    "memo-api": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "scripts": {
@@ -31,7 +31,6 @@
     "node": ">=18"
   },
   "files": [
-    "dist",
-    "bin"
+    "dist"
   ]
 }
