@@ -1,9 +1,3 @@
-import type { Command } from "commander";
-
-export function getToken(cmd: Command): string {
-  return (cmd as Command & { _apiToken: string })._apiToken;
-}
-
 export function isJsonOutput(mode: string): boolean {
   return mode === "json";
 }

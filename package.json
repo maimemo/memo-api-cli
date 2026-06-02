@@ -1,6 +1,6 @@
 {
   "name": "@maimemo/memo-api",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "墨墨开放 API 命令行工具",
   "license": "MIT",
   "author": "tjt@maimemo.com",
@@ -18,11 +18,12 @@
   },
   "dependencies": {
     "chalk": "^5.4.0",
-    "commander": "^13.1.0",
-    "string-width": "^8.2.1"
+    "string-width": "^8.2.1",
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/yargs": "^17.0.35",
     "tsx": "^4.19.0",
     "typescript": "^5.8.0",
     "undici": "^7.12.0"

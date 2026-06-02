@@ -7,7 +7,7 @@
 - **Language**: TypeScript (strict mode, ES2022 target)
 - **Runtime**: Node.js >= 18
 - **Module system**: ESM (`"type": "module"`)
-- **CLI framework**: [commander](https://github.com/tj/commander.js) v13
+- **CLI framework**: [yargs](https://yargs.js.org/) v18
 - **Package manager**: npm
 - **Single-package repository** (not a monorepo)
 
@@ -15,13 +15,13 @@
 
 ```
 src/
-  index.ts        -- CLI entry point (commander program assembly)
+  index.ts        -- CLI entry point (yargs program assembly, middleware, global options)
   client.ts       -- HTTP client wrapping fetch (auth, timeout, error handling)
   config.ts       -- Config file reader (~/.config/memo-api.json)
   output.ts       -- Output formatters (columns with CJK alignment, JSON, errors)
   stdin.ts        -- Stdin reading & JSON parsing for piped input
   commands/       -- One file per API resource (note, interp, phrase, notepad, voc, study)
-  lib/            -- Shared utilities (auth, collect, confirm, default-fields, helpers, word-resolve)
+  lib/            -- Shared utilities (auth, confirm, default-fields, helpers, mock, word-resolve)
   types/          -- TypeScript type definitions mirroring protobuf API schemas
 test/             -- Test files mirroring src/ structure
 dist/             -- Compiled JS output (tsc, git-ignored)
@@ -102,10 +102,10 @@ node --import tsx --experimental-test-coverage --test test/**/*.test.ts
 - **Module**: NodeNext (`.js` extensions on relative imports, even in `.ts` files)
 - **No linter or formatter** configured — rely on `tsc` for correctness
 - **File naming**: kebab-case (`word-resolve.ts`, `default-fields.ts`)
-- **Import ordering**: external packages first (`commander`, `chalk`), then internal (`./client.js`, `./output.js`)
+- **Import ordering**: external packages first (`yargs`, `chalk`), then internal (`./client.js`, `./output.js`)
 - **Error messages**: Chinese, written to stderr via `printError(message)`
 - **Output**: JSON to stdout via `printJson()`, tab-separated columns via `printColumns()` with CJK-aware alignment (`string-width`)
-- **Token injection**: All commands access the token from `(cmd as any)._apiToken` set by the global `preAction` hook in `src/index.ts`
+- **Token injection**: Token is resolved by global middleware in `src/index.ts` and injected into `argv` via `(argv as any).token`. Handlers access it via `(argv as any).token`. Token resolution is skipped for `--help` and `completion` commands.
 
 ---
 

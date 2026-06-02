@@ -7,7 +7,7 @@
 ### 设计原则
 
 - 遵循 [clig.dev](https://clig.dev/) 和 GNU 编码规范
-- 使用 `commander` 处理命令行参数，入口为 `src/index.ts`
+- 使用 `yargs` 处理命令行参数，入口为 `src/index.ts`
 - `noun verb` 二层结构：`memo-api <resource> <action>`
 - **纯文本输出**，适合管道和脚本
 - 每个参数提供合理的单字母短别名（`-x`），不与全局参数冲突

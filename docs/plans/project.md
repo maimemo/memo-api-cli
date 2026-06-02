@@ -2,7 +2,7 @@
 
 ## 概述
 
-独立 TypeScript CLI 工具，通过 commander 解析命令调用墨墨开放 API，纯文本输出，适合管道和脚本。
+独立 TypeScript CLI 工具，通过 yargs 解析命令调用墨墨开放 API，纯文本输出，适合管道和脚本。
 
 ---
 
@@ -12,7 +12,7 @@
 |------|------|------|
 | 语言 | TypeScript (strict) | 完善的类型推导，编译器辅助重构 |
 | 运行时 | Node.js 18+ | 内置 `fetch`，无需额外 HTTP 依赖 |
-| CLI 框架 | commander | 声明式命令定义，自动生成帮助，v12+ 支持 async action |
+| CLI 框架 | yargs | 声明式命令定义，自动生成帮助，内置 shell 补全 |
 | 输出着色 | chalk | 终端颜色分量轻、API 简洁 |
 | 测试 | node:test + node:assert | Node 内置，零依赖 |
 | HTTP Mock | undici.MockAgent | Node 原生 undici，精确拦截 fetch |
