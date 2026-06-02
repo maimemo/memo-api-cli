@@ -1,4 +1,5 @@
 import { printError } from "./output.js";
+import { isMockEnabled, findEndpoint } from "./lib/mock.js";
 
 const BASE_URL = "https://open.maimemo.com/open/";
 const TIMEOUT_MS = 30_000;
@@ -19,6 +20,10 @@ export async function api<T>(
   options: FetchOptions,
   token: string,
 ): Promise<T> {
+  if (isMockEnabled()) {
+    return mockApi<T>(path, options);
+  }
+
   const url = new URL(path.replace(/^\//, ""), BASE_URL);
   if (options.query) {
     for (const [key, value] of Object.entries(options.query)) {
@@ -104,6 +109,68 @@ export async function api<T>(
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function mockApi<T>(
+  path: string,
+  options: FetchOptions,
+): Promise<T> {
+  const url = new URL(path.replace(/^\//, ""), BASE_URL);
+  const ep = findEndpoint(
+    options.method ?? "GET",
+    url.pathname,
+    options.query,
+    options.body,
+  );
+
+  const status = ep.status ?? 200;
+
+  if (verbose) {
+    process.stderr.write(
+      `\n> ${options.method ?? "GET"} ${url.pathname}${url.search ? "?" + url.search : ""}\n`,
+    );
+    process.stderr.write(`> Host: ${url.host}\n`);
+    process.stderr.write(`> Authorization: Bearer ********\n`);
+    if (options.body !== undefined) {
+      const bodyStr = JSON.stringify(options.body);
+      process.stderr.write(
+        `> Body: ${bodyStr.length > 200 ? bodyStr.slice(0, 200) + "..." : bodyStr}\n`,
+      );
+    }
+    process.stderr.write(`< HTTP ${status}\n`);
+  }
+
+  if (status !== 200) {
+    printError(`错误: HTTP ${status}: ${httpErrorLabel(status)}`);
+    process.exit(1);
+  }
+
+  const text = JSON.stringify(ep.response);
+
+  if (verbose) {
+    const preview = text.length > 500 ? text.slice(0, 500) + "..." : text;
+    process.stderr.write(`< ${preview}\n\n`);
+  }
+
+  const json = JSON.parse(text) as {
+    errors?: unknown[];
+    data?: T;
+    success?: boolean;
+  };
+
+  if (json.errors && json.errors.length > 0) {
+    for (const e of json.errors) {
+      printError(formatError(e));
+    }
+    process.exit(1);
+  }
+
+  if (json.success === false) {
+    printError("错误: 请求未成功");
+    process.exit(1);
+  }
+
+  return (json.data as T) ?? (json as unknown as T);
 }
 
 function formatError(e: unknown): string {
