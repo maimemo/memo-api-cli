@@ -45,11 +45,19 @@
 API 使用 Token 鉴权 (HMAC 签名，header `Authorization: Bearer <token>`)。
 
 Token 获取优先级：
-1. `--token` / `-T` flag
-2. `MAIMEMO_API_TOKEN` 环境变量
-3. `~/.config/memo-api.json` 中的 `apiToken` 字段
+1. `--token` / `-T` flag（老式 API Token）
+2. `MAIMEMO_API_TOKEN` 环境变量（老式 API Token）
+3. `~/.config/memo-api.json` 中的 `apiToken` 字段（老式 API Token）
+4. `~/.config/memo-api.json` 中的 OIDC `at` 字段（自动刷新，过期时用 `rt` 刷新）
 
-（Token 由用户在开放平台自行获取，CLI 不管理 Token 生命周期。）
+### OIDC 登录
+
+CLI 新增 `memo-api auth login` 子命令，通过 OIDC PKCE 流程获取 access_token 和 refresh_token 并保存到配置文件。
+
+- 库：`openid-client` v6（Panva）
+- 流程：PKCE S256 → 浏览器授权 → 本地 callback server（端口 18884）→ token exchange → 写配置文件
+- `memo-api auth whoami`：调用 OIDC userinfo endpoint 显示当前用户 UID 和昵称
+- 详情见 [auth.md](./auth.md)
 
 ---
 
@@ -542,6 +550,44 @@ memo-api study advance -v <id> [-v <id> ...]
 
 ---
 
+## 资源：auth (认证)
+
+```
+memo-api auth <action>
+```
+
+| Action | 说明             | 需要 Token |
+|--------|----------------|-----------|
+| `login` | 登录             | 否 |
+| `whoami` | 显示当前用户 UID 和昵称 | 是（仅 OIDC at） |
+
+### `auth login` — OIDC PKCE 登录
+
+```
+memo-api auth login
+```
+
+无参数。发起完整 PKCE 流程：打开浏览器 → 用户授权 → 本地回调 → 保存 at/rt 到配置文件。
+
+- 端口 18884 被占用时终止
+- 10 分钟超时
+- 输出登录成功信息（列式显示 uid + name，JSON 输出 `{"uid":"...","name":"..."}`）
+- 详情见 [auth.md](./auth.md)
+
+### `auth whoami` — 当前用户信息
+
+```
+memo-api auth whoami
+```
+
+无参数。仅 OIDC at 可用（apiToken 时提示 "请先执行 memo-api auth login"）。
+
+- 调用 OIDC userinfo endpoint
+- 列式输出 uid + name
+- JSON 输出完整 userinfo 响应
+
+---
+
 ## `--word` 自动解析
 
 部分 API 仅接受 `voc_id` 而不提供按拼写查询的等价参数（note list/create、interpretation list/create、phrase list/create）。`--word` 参数提供便捷方式：先调用 `voc get --spelling <word>` 获取单词 ID，再执行原操作。
@@ -675,6 +721,7 @@ Options:
   -V, --version           版本号
 
 Commands:
+  auth       OIDC 登录与身份查询（login / whoami）
   note       助记查询与编辑（list / create / update / delete）
   interp     释义查询与编辑（list / create / update / delete）
   phrase     例句查询与编辑（list / create / update / delete）
@@ -989,6 +1036,7 @@ await program.parseAsync(process.argv)
 
 | 完整名称 | 别名 | HTTP 路径前缀 |
 |----------|------|---------------|
+| `auth` | — | OIDC endpoints |
 | `note` | — | `/api/v1/notes` |
 | `interpretation` | `interp` | `/api/v1/interpretations` |
 | `phrase` | — | `/api/v1/phrases` |
@@ -1234,6 +1282,28 @@ await program.parseAsync(process.argv)
 |----|------|------|
 | M1 | `memo-api voc query` 超过 1000 个 spelling | 报错：超过最大限制 1000 |
 | M2 | `memo-api study add` 超过 1000 个 id | 报错：超过最大限制 1000 |
+
+#### 20. auth 命令
+
+| ID | 用例 | 预期 |
+|----|------|------|
+| A1 | `memo-api auth login` | Mock OIDC discovery + token endpoint，验证 at/rt 写入 config（0600） |
+| A2 | `memo-api auth login` 端口 18884 占用 | 报错退出 |
+| A3 | `memo-api auth login` 超时 | 10 分钟后报错 "登录超时" |
+| A4 | `memo-api auth login` OIDC 回调 error | 输出 OIDC 错误描述并退出 |
+| A5 | `memo-api auth login` 浏览器打开失败 | 打印 authorization URL 到 stderr，等待手动操作 |
+| A6 | `memo-api auth login` 已登录再次执行 | 覆盖旧 at/rt |
+| A7 | `memo-api auth whoami` (OIDC at 有效) | 列式输出 uid + name |
+| A8 | `memo-api auth whoami -O json` (OIDC at 有效) | JSON 输出完整 userinfo |
+| A9 | `memo-api auth whoami` (使用 apiToken) | 报错 "whoami 仅支持 OIDC 登录" |
+| A10 | 无任何凭据执行 `memo-api voc get` | 提示 "请通过 -T、MAIMEMO_API_TOKEN 提供 Token，或执行 memo-api auth login 登录" |
+| A11 | OIDC at 过期，rt 有效 → 执行命令 | 自动刷新 at，更新 config，命令正常执行 |
+| A12 | OIDC at 过期，rt 过期 → 执行命令 | 清除 config 中 at/rt，报错 "登录已过期" |
+| A13 | config 有 apiToken + OIDC at | 优先使用 apiToken |
+| A14 | config 有 OIDC at（有效），无 apiToken | 直接使用 OIDC at |
+| A15 | `--help` 不触发 token 解析 | auth login 也不触发 |
+| A16 | `memo-api auth --help` | 显示 login / whoami 子命令 |
+| A17 | `memo-api auth login --help` | 显示 login 帮助（无参数） |
 
 ---
 

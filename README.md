@@ -12,11 +12,22 @@ npm install -g @maimemo/memo-api
 
 ## 设置
 
-工具支持三种方式提供 API Token（优先级从高到低）：
+工具支持四种方式提供 API Token（优先级从高到低）：
 
 1. **命令行参数**：`-T` 或 `--token`
 2. **环境变量**：`MAIMEMO_API_TOKEN`
 3. **配置文件**：`~/.config/memo-api.json`，内容为 `{ "apiToken": "你的Token" }`
+4. **OIDC 登录**：通过 `memo-api auth login` 登录，自动获取并保存凭证
+
+### OIDC 登录
+
+```bash
+# 登录（打开浏览器完成授权）
+memo-api auth login
+
+# 查看当前登录用户
+memo-api auth whoami
+```
 
 ## 用法
 
@@ -28,6 +39,7 @@ memo-api <资源> <操作> [参数...]
 
 | 资源 | 操作 | 说明 |
 |------|------|------|
+| `auth` | `login`, `whoami` | 认证与身份查询 |
 | `voc` / `vocabulary` | `get`, `query` | 查询单词 |
 | `note` | `list`, `create`, `update`, `delete` | 助记管理 |
 | `interp` / `interpretation` | `list`, `create`, `update`, `delete` | 释义管理 |
@@ -49,6 +61,9 @@ memo-api <资源> <操作> [参数...]
 ### 示例
 
 ```bash
+# 登录
+memo-api auth login
+
 # 查询单词
 memo-api voc get --spelling=apple
 
@@ -117,3 +132,21 @@ memo-api voc get --spelling=apple --verbose
 ```bash
 memo-api note delete id123 -f
 ```
+
+**Shell 自动补全**：启动 shell 时加载补全脚本，支持命令、子命令和选项的 Tab 补全。
+
+```bash
+# bash
+memo-api completion >> ~/.bashrc
+
+# zsh
+memo-api completion >> ~/.zshrc
+```
+
+## Changelog
+
+### 1.2.0
+- 新增登录命令
+
+### 1.1.0 
+- 支持命令补全

@@ -24,9 +24,10 @@
 ```json
 {
   "dependencies": {
-    "commander": "^13",
+    "yargs": "^18",
     "chalk": "^5",
-    "string-width": "^7"
+    "string-width": "^7",
+    "openid-client": "^6"
   },
   "devDependencies": {
     "typescript": "^5",
@@ -51,6 +52,7 @@ memo-api/
 │   ├── stdin.ts              # stdin 检测与 JSON 解析
 │   ├── output.ts             # 列式输出 / JSON 输出 / 错误输出
 │   ├── commands/
+│   │   ├── auth.ts            # auth 子命令（login / whoami）
 │   │   ├── note.ts           # note 子命令（list/create/update/delete）
 │   │   ├── interp.ts         # interpretation 子命令（list/create/update/delete）
 │   │   ├── phrase.ts         # phrase 子命令（list/create/update/delete）
@@ -58,8 +60,8 @@ memo-api/
 │   │   ├── voc.ts            # vocabulary 子命令（get/query）
 │   │   └── study.ts          # study 子命令（progress/today/records/add/advance）
 │   ├── lib/
-│       ├── auth.ts           # Token 解析（flag > env > config）
-│       ├── collect.ts        # commnder 数组 collect 工厂函数
+│       ├── auth.ts           # Token 解析（flag > env > apiToken > OIDC at）
+│       ├── oidc.ts           # OIDC 流程（PKCE login、token 刷新、userinfo）
 │       ├── word-resolve.ts   # --word 自动解析为 voc_id
 │       └── confirm.ts        # 删除确认，--force 跳过
 │   └── types/
@@ -85,8 +87,8 @@ memo-api/
 
 ### 结构原则
 
-- **`src/commands/`**：每个文件导出一个 `Command` 实例，内部注册其 action 子命令。模块之间无横向依赖。
-- **`src/lib/`**：可复用的纯函数，无 commander 耦合，易于独立测试。
+- **`src/commands/`**：每个文件导出一个 `CommandModule` 实例，内部注册其 action 子命令。模块之间无横向依赖。
+- **`src/lib/`**：可复用的纯函数，无 yargs 耦合，易于独立测试。
 - **`test/`**：镜像 `src/` 结构，文件命名为 `<name>.test.ts`。
 
 ---
@@ -148,7 +150,7 @@ API 请求/响应的 TypeScript 类型定义来源于 `~/Projects/proto/maimemo.
 
 ### `src/index.ts` — 入口
 
-创建根 `Command('memo-api')`，注册全局选项（`-T`、`-O`、`--no-color`），注册 preAction hook（Token 注入），挂载 6 个资源子命令，调用 `program.parseAsync(process.argv)`。
+创建 yargs 程序，注册全局选项（`-T`、`-O`、`--no-color`），注册 middleware（Token 注入 + 全局选项处理），挂载 7 个资源子命令，调用 `.parseAsync()`。
 
 不包含业务逻辑，不 import 业务模块。仅做组装。
 
@@ -186,16 +188,29 @@ api('/api/v1/notes', { method: 'GET', query: { voc_id: 'xxx' } }, token)
 每个文件模式：
 
 ```typescript
-import { Command } from 'commander'
+import type { CommandModule } from "yargs";
 
-export const noteCmd = new Command('note')
-  .description('助记查询与编辑（list / create / update / delete）')
-
-// ... 创建子命令，用 noteCmd.addCommand(...) 注册
+export const authCmd: CommandModule = {
+  command: "auth",
+  describe: "OIDC 登录与身份查询（login / whoami）",
+  builder: (yargs) => yargs.command(...).help(),
+  handler: () => {},
+};
 ```
 
+```typescript
+import type { CommandModule } from "yargs";
+
+export const noteCmd: CommandModule = {
+  command: "note",
+  describe: "助记查询与编辑（list / create / update / delete）",
+  builder: (yargs) => yargs.command(...).help(),
+  handler: () => {},
+};
+
 **关键约束**：
-- action handler 签名统一：`async (options: CliOptions, cmd: Command) => void`
+- handler 签名统一为 `(argv: Args) => Promise<void>`
+- 全局选项和 token 通过 middleware 注入到 `argv`，handler 中直接访问 `(argv as any).token`
 - 每个 action 先检测 stdin JSON，优先级高于命令行参数
 - API 调用走 `src/client.ts` 的 `api()` 函数
 - 输出走 `src/output.ts`
@@ -203,18 +218,25 @@ export const noteCmd = new Command('note')
 ### `src/lib/auth.ts` — 认证
 
 ```typescript
-function resolveToken(opts: { token?: string }): string
+type TokenSource = "flag" | "env" | "apiToken" | "oidc";
+type TokenResult = { token: string; source: TokenSource };
+
+async function resolveToken(opts: { token?: string }): Promise<TokenResult>
 ```
 
-优先级：`opts.token` → `MAIMEMO_API_TOKEN` env → `~/.config/memo-api.json` `apiToken` → throw
+优先级：`opts.token` → `MAIMEMO_API_TOKEN` env → `~/.config/memo-api.json` `apiToken` → OIDC at（自动刷新）→ throw。
 
-### `src/lib/collect.ts` — 数组收集
+内部调用 `resolveOidcToken()` 处理 OIDC at/rt 的过期检查和刷新。
+
+### `src/lib/oidc.ts` — OIDC 流程
 
 ```typescript
-function collect(value: string, previous: string[]): string[]
+async function startLogin(): Promise<{ at: TokenEntry; rt: TokenEntry; uid: string; name: string }>
+async function refreshToken(rt: string): Promise<{ at: TokenEntry }>
+async function getUserInfo(at: string): Promise<{ sub: string; name: string }>
 ```
 
-所有数组参数（`-g`、`-I`、`-v`（study）、`-s`（voc/study））复用此函数。
+封装 openid-client：discovery、PKCE 登录、token 刷新、userinfo。不经过 `src/client.ts` 的 `api()` 函数。
 
 ### `src/lib/word-resolve.ts` — 单词解析
 
@@ -238,28 +260,28 @@ TTY + 无 `--force` → 提示 y/N；管道 + 无 `--force` → 报错退出。
 
 1. **一个文件一个职责**。client.ts 只管 HTTP，stdin.ts 只管管道读取，不交叉。
 2. **函数短小**。每个函数 ≤ 50 行，超过则拆分。
-3. **不引入状态管理**。无 DI 容器，无 Store。参数通过 commander options 和函数参数传递。
+3. **不引入状态管理**。无 DI 容器，无 Store。参数通过 yargs options 和函数参数传递。
 4. **纯函数优先**。`src/lib/` 下的模块优先写成纯函数，方便测试。
 5. **不提前抽象**。3 个以上重复时才提取公共逻辑。
-6. **依赖少**。当前依赖仅 `commander` 和 `chalk`（均已存在）。
+6. **依赖少**。当前依赖仅 `yargs`、`chalk`、`string-width`、`openid-client`。
 
 ## 可拓展性
 
 ### 新增 API 资源
 
 1. 在 `src/commands/` 新增 `<resource>.ts`
-2. 创建 `Command`，注册 action 子命令
-3. 在 `src/index.ts` 中 `program.addCommand(xxxCmd)`
+2. 创建 `CommandModule`，注册 action 子命令
+3. 在 `src/index.ts` 中 `program.command(xxxCmd)`
 
 无需修改任何其他文件。命令之间零耦合。
 
 ### 新增 action
 
-在现有命令文件中 `.addCommand()` 新增子命令即可。
+在现有命令文件的 `builder` 中 `.command()` 新增子命令即可。
 
 ### 新增全局选项
 
-在 `src/index.ts` 的 `program.option()` 注册。所有子命令通过 `optsWithGlobals()` 自动获取。
+在 `src/index.ts` 的 `.option()` 注册。所有子命令通过 yargs 自动传播获取。
 
 ---
 
@@ -286,12 +308,13 @@ TTY + 无 `--force` → 提示 y/N；管道 + 无 `--force` → 报错退出。
 test/
 ├── lib/
 │   ├── auth.test.ts
-│   ├── collect.test.ts
+│   ├── oidc.test.ts
 │   ├── config.test.ts
 │   ├── confirm.test.ts
 │   ├── stdin.test.ts
 │   └── word-resolve.test.ts
 ├── commands/
+│   ├── auth.test.ts
 │   ├── note.test.ts
 │   ├── interp.test.ts
 │   ├── phrase.test.ts
@@ -307,13 +330,13 @@ test/
 ```typescript
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { collect } from '../src/lib/collect.js'
+import { resolveToken } from '../src/lib/auth.js'
 
-describe('collect', () => {
-  it('accumulates values', () => {
-    const acc1 = collect('A', [])
-    const acc2 = collect('B', acc1)
-    assert.deepEqual(acc2, ['A', 'B'])
+describe('resolveToken', () => {
+  it('returns flag token as highest priority', async () => {
+    const result = await resolveToken({ token: 'flag-token' })
+    assert.equal(result.token, 'flag-token')
+    assert.equal(result.source, 'flag')
   })
 })
 ```
@@ -378,8 +401,10 @@ node --import tsx --experimental-test-coverage --test test/**/*.test.ts
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "commander": "^13.1.0",
-    "chalk": "^5.4.0"
+    "yargs": "^18",
+    "chalk": "^5.4.0",
+    "string-width": "^7",
+    "openid-client": "^6"
   },
   "devDependencies": {
     "typescript": "^5.8.0",
@@ -414,9 +439,9 @@ import('../dist/index.js')
 | 阶段 | 内容 | 可并行 |
 |------|------|--------|
 | 1 | `tsconfig.json`、`src/client.ts`、`src/config.ts`、`src/output.ts`、`src/stdin.ts` | 是 |
-| 2 | `src/lib/auth.ts`、`src/lib/collect.ts`、`src/lib/confirm.ts`、`src/lib/word-resolve.ts` | 是 |
+| 2 | `src/lib/auth.ts`、`src/lib/oidc.ts`、`src/lib/confirm.ts`、`src/lib/word-resolve.ts` | 是 |
 | 3 | `src/index.ts`（骨架，仅注册空子命令） | 依赖 1 |
-| 4 | `src/commands/note.ts`、`src/commands/interp.ts`、`src/commands/study.ts` | 依赖 2,3 |
+| 4 | `src/commands/auth.ts`、`src/commands/note.ts`、`src/commands/interp.ts`、`src/commands/study.ts` | 依赖 2,3 |
 | 5 | `src/commands/phrase.ts`、`src/commands/notepad.ts`、`src/commands/voc.ts` | 依赖 2,3 |
 | 6 | `test/`（与对应模块同频编写） | 与 1-5 交替 |
 | 7 | `bin/memo-api.js`、package.json scripts | 依赖 3 |
@@ -468,11 +493,13 @@ import('../dist/index.js')
 ### Phase 4 — 工具层
 
 - [ ] `src/lib/auth.ts`
-  - [ ] `resolveToken(opts)` — 优先级：`-T` flag > `MAIMEMO_API_TOKEN` env > config file apiToken
+  - [ ] `resolveToken(opts)` — 优先级：`-T` flag > `MAIMEMO_API_TOKEN` env > config file apiToken > OIDC at
+  - [ ] `resolveOidcToken()` — OIDC at/rt 过期检查、刷新
   - [ ] 无 Token 时打印错误信息并 `process.exit(1)`
-- [ ] `src/lib/collect.ts`
-  - [ ] `collect(value, previous)` — commander 数组累积函数
-  - [ ] 支持 stdin `-` 输入：值是 `"-"` 时从进程 stdin 读取换行分隔值
+- [ ] `src/lib/oidc.ts`
+  - [ ] `startLogin()` — PKCE 登录全流程：discovery → 本地 callback server → 浏览器授权 → token exchange → 写 config
+  - [ ] `refreshToken(rt)` — rt 刷新 at，调 openid-client `client.refresh()`
+  - [ ] `getUserInfo(at)` — 调 OIDC userinfo endpoint，返回 sub + name
 - [ ] `src/lib/confirm.ts`
   - [ ] `confirmDelete(resource, id, force?)` — 删除确认
   - [ ] TTY + 无 `--force` → 提示 `Delete {resource} {id}? (y/N)`
@@ -486,14 +513,17 @@ import('../dist/index.js')
 ### Phase 5 — 入口
 
 - [ ] `src/index.ts`
-  - [ ] 创建根 `Command('memo-api')`
-  - [ ] 注册全局选项：`-T --token`、`-O --output`、`--no-color`
-  - [ ] `preAction` hook：调用 `resolveToken()`，挂载到 `(actionCmd as any)._apiToken`
-  - [ ] 注册 `noteCmd`、`interpCmd`、`phraseCmd`、`notepadCmd`、`vocCmd`、`studyCmd`
-  - [ ] `await program.parseAsync(process.argv)`
+  - [ ] 创建 yargs 程序，注册全局选项
+  - [ ] `middleware`：启用/禁用颜色、verbose、header、fields 等全局设置
+  - [ ] `middleware`（async）：调用 `resolveToken()`，挂载到 `(argv as any).token` 和 `(argv as any)._tokenSource`
+  - [ ] 注册 `authCmd`、`noteCmd`、`interpCmd`、`phraseCmd`、`notepadCmd`、`vocCmd`、`studyCmd`
+  - [ ] `await yargs(...).parseAsync()`
 
 ### Phase 6 — 命令模块
 
+- [ ] `src/commands/auth.ts`
+  - [ ] `auth login` — 零参数 PKCE 登录
+  - [ ] `auth whoami` — 调用 OIDC userinfo，仅 OIDC at 可用
 - [ ] `src/commands/note.ts`
   - [ ] `note list` — GET /api/v1/notes?voc_id=xxx，`--voc-id` / `--word` 互斥
   - [ ] `note create` — POST /api/v1/notes，`--voc-id`+`--type`+`--note`
@@ -530,13 +560,14 @@ import('../dist/index.js')
 
 ### Phase 7 — 测试
 
-- [ ] `test/lib/auth.test.ts` — Token 解析优先级
-- [ ] `test/lib/collect.test.ts` — 数组累积和 stdin `-` 模式
-- [ ] `test/lib/config.test.ts` — 配置文件读取
+- [ ] `test/lib/auth.test.ts` — Token 解析优先级、OIDC at/rt 过期判断
+- [ ] `test/lib/oidc.test.ts` — refreshToken、getUserInfo（mock openid-client）
+- [ ] `test/lib/config.test.ts` — 配置文件读取和原子写入
 - [ ] `test/lib/confirm.test.ts` — 删除确认逻辑
 - [ ] `test/lib/stdin.test.ts` — stdin 读取和 JSON 解析
 - [ ] `test/lib/word-resolve.test.ts` — 单词拼写 → voc_id 解析
 - [ ] `test/client.test.ts` — HTTP 客户端（MockAgent）
+- [ ] `test/commands/auth.test.ts` — auth login / whoami（MockAgent mock OIDC endpoints）
 - [ ] `test/commands/note.test.ts` — note 全部 action（MockAgent）
 - [ ] `test/commands/interp.test.ts` — interpretation 全部 action（MockAgent）
 - [ ] `test/commands/phrase.test.ts` — phrase 全部 action（MockAgent）

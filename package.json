@@ -1,10 +1,20 @@
 {
   "name": "@maimemo/memo-api",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "墨墨开放 API 命令行工具",
   "license": "MIT",
   "author": "tjt@maimemo.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maimemo/memo-api-cli"
+  },
   "type": "module",
+  "keywords": [
+    "maimemo",
+    "墨墨背单词",
+    "OpenAPI",
+    "CLI"
+  ],
   "bin": {
     "memo-api": "./dist/index.js"
   },
@@ -18,6 +28,7 @@
   },
   "dependencies": {
     "chalk": "^5.4.0",
+    "openid-client": "^6.8.4",
     "string-width": "^8.2.1",
     "yargs": "^18.0.0"
   },

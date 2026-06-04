@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import { authCmd } from "./commands/auth.js";
 import { noteCmd } from "./commands/note.js";
 import { interpCmd } from "./commands/interp.js";
 import { phraseCmd } from "./commands/phrase.js";
@@ -8,6 +9,7 @@ import { notepadCmd } from "./commands/notepad.js";
 import { vocCmd } from "./commands/voc.js";
 import { studyCmd } from "./commands/study.js";
 import { resolveToken } from "./lib/auth.js";
+import { setOidcVerbose } from "./lib/oidc.js";
 import { setColor, setShowHeader, setSelectedFields } from "./output.js";
 import { setVerbose } from "./client.js";
 
@@ -15,6 +17,7 @@ await yargs(hideBin(process.argv))
   .scriptName("memo-api")
   .usage("$0 <command> [options]")
   .epilogue(`示例:
+  $ memo-api auth login
   $ memo-api voc get --spelling=apple
   $ memo-api note list --word=apple -O json
   $ memo-api study progress
@@ -34,12 +37,13 @@ await yargs(hideBin(process.argv))
   .option("H", { type: "boolean", hidden: true, description: "等同于 --no-header" })
   .option("fields", { type: "string", description: "选择展示的字段（逗号分隔）。以 + 开头追加，以 - 开头移除" })
 
-  .middleware((argv) => {
+  .middleware(async (argv) => {
     if (argv.color === false) {
       setColor(false);
     }
     if (argv.verbose) {
       setVerbose(true);
+      setOidcVerbose(true);
     }
     if (argv.H === true) {
       argv.header = false;
@@ -50,13 +54,19 @@ await yargs(hideBin(process.argv))
     if (argv.fields) {
       setSelectedFields(argv.fields);
     }
-    const isHelpCommand = argv.help === true
-      || (argv._.length > 0 && argv._[0] === "completion");
-    if (!isHelpCommand) {
-      (argv as any).token = resolveToken({ token: argv.token });
+    const isHelpOrCompletion =
+      argv.help === true ||
+      (argv._.length > 0 && argv._[0] === "completion");
+    const isAuthLogin =
+      argv._[0] === "auth" && argv._[1] === "login";
+    if (!isHelpOrCompletion && !isAuthLogin) {
+      const result = await resolveToken({ token: argv.token });
+      (argv as any).token = result.token;
+      (argv as any)._tokenSource = result.source;
     }
   })
 
+  .command(authCmd)
   .command(noteCmd)
   .command(interpCmd)
   .command(phraseCmd)

@@ -20,15 +20,15 @@ src/
   config.ts       -- Config file reader (~/.config/memo-api.json)
   output.ts       -- Output formatters (columns with CJK alignment, JSON, errors)
   stdin.ts        -- Stdin reading & JSON parsing for piped input
-  commands/       -- One file per API resource (note, interp, phrase, notepad, voc, study)
-  lib/            -- Shared utilities (auth, confirm, default-fields, helpers, mock, word-resolve)
+  commands/       -- One file per API resource (auth, note, interp, phrase, notepad, voc, study)
+  lib/            -- Shared utilities (auth, oidc, confirm, default-fields, helpers, mock, word-resolve)
   types/          -- TypeScript type definitions mirroring protobuf API schemas
 test/             -- Test files mirroring src/ structure
 dist/             -- Compiled JS output (tsc, git-ignored)
 bin/memo-api.js   -- CLI binary entry (shebang, re-exports dist/index.js)
 ```
 
-All API requests go to `https://open.maimemo.com/open/`. The CLI follows a `memo-api <resource> <action>` pattern.
+All API requests go to `https://open.maimemo.com/open/`. OIDC authentication requests go to `https://accounts.maimemo.com/oidc`. The CLI follows a `memo-api <resource> <action>` pattern.
 
 ---
 
@@ -39,7 +39,7 @@ npm install
 ```
 
 - Requires Node.js >= 18
-- No `.env` file needed; the tool reads API tokens from `~/.config/memo-api.json` (field `apiToken`), the `MAIMEMO_API_TOKEN` environment variable, or the `-T`/`--token` CLI flag
+- No `.env` file needed; the tool reads API tokens from `~/.config/memo-api.json` (field `apiToken` or OIDC `at`/`rt`), the `MAIMEMO_API_TOKEN` environment variable, or the `-T`/`--token` CLI flag
 
 ---
 
@@ -105,7 +105,7 @@ node --import tsx --experimental-test-coverage --test test/**/*.test.ts
 - **Import ordering**: external packages first (`yargs`, `chalk`), then internal (`./client.js`, `./output.js`)
 - **Error messages**: Chinese, written to stderr via `printError(message)`
 - **Output**: JSON to stdout via `printJson()`, tab-separated columns via `printColumns()` with CJK-aware alignment (`string-width`)
-- **Token injection**: Token is resolved by global middleware in `src/index.ts` and injected into `argv` via `(argv as any).token`. Handlers access it via `(argv as any).token`. Token resolution is skipped for `--help` and `completion` commands.
+- **Token injection**: Token is resolved by global middleware in `src/index.ts` (now async) and injected into `argv` via `(argv as any).token`. Handlers access it via `(argv as any).token`. Token resolution is skipped for `--help`, `completion`, and `auth login` commands.
 
 ---
 
@@ -115,6 +115,7 @@ node --import tsx --experimental-test-coverage --test test/**/*.test.ts
 memo-api [global options] <resource> <action> [arguments...]
 
 Resources:
+  auth        login / whoami
   note        list / create / update / delete
   interp      list / create / update / delete  (alias: interpretation)
   phrase      list / create / update / delete
@@ -149,10 +150,10 @@ echo '{"spelling":"apple"}' | memo-api voc get
 
 ## Adding a New Resource / Command
 
-1. Create `src/types/<resource>.ts` with TypeScript types for request/response shapes
-2. Create `src/commands/<resource>.ts` exporting a `Command` instance with subcommands
-3. Add default column fields in `src/lib/default-fields.ts`
-4. Register the command in `src/index.ts` via `program.addCommand()`
+1. Create `src/types/<resource>.ts` with TypeScript types for request/response shapes (skip for auth — uses openid-client types)
+2. Create `src/commands/<resource>.ts` exporting a `CommandModule` with subcommands
+3. Add default column fields in `src/lib/default-fields.ts` (skip for auth — whoami outputs uid/name directly)
+4. Register the command in `src/index.ts` via `program.command()`
 5. Create tests in `test/commands/<resource>.test.ts` using `MockAgent`
 
 ---
@@ -177,7 +178,7 @@ echo '{"spelling":"apple"}' | memo-api voc get
 ## Additional Notes
 
 - **No database** — the tool is a stateless CLI client that calls a remote HTTP API
-- **Config file**: `~/.config/memo-api.json` with `{ "apiToken": "..." }`
+- **Config file**: `~/.config/memo-api.json` with `{ "apiToken": "...", "at": {...}, "rt": {...} }`
 - **Timeout**: HTTP requests time out after 30 seconds
-- **Token priority**: `-T` flag > `MAIMEMO_API_TOKEN` env var > config file
+- **Token priority**: `-T` flag > `MAIMEMO_API_TOKEN` env var > config `apiToken` > config OIDC `at` (auto-refreshed)
 - **CJK support**: Column alignment uses `string-width` (not `.length`) for accurate CJK character width
