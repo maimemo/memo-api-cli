@@ -42,8 +42,8 @@ const whoamiHandler = async (argv: WhoamiArgs) => {
   } else {
     const uid = userInfo.uid;
     const name = userInfo.name;
-    process.stdout.write(`UID\tName\n`);
-    process.stdout.write(`${uid}\t${name}\n`);
+    process.stdout.write(`Name\tUID(anonymized)\n`);
+    process.stdout.write(`${name}\t${uid}\n`);
   }
 };
 

@@ -152,7 +152,7 @@ echo '{"spelling":"apple"}' | memo-api voc get
 
 1. Create `src/types/<resource>.ts` with TypeScript types for request/response shapes (skip for auth — uses openid-client types)
 2. Create `src/commands/<resource>.ts` exporting a `CommandModule` with subcommands
-3. Add default column fields in `src/lib/default-fields.ts` (skip for auth — whoami outputs uid/name directly)
+3. Add default column fields in `src/lib/default-fields.ts` (skip for auth — whoami outputs name/UID(anonymized) directly)
 4. Register the command in `src/index.ts` via `program.command()`
 5. Create tests in `test/commands/<resource>.test.ts` using `MockAgent`
 

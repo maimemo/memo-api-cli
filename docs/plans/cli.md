@@ -588,7 +588,7 @@ memo-api auth whoami
 无参数。仅 OIDC at 可用（apiToken 时提示 "请先执行 memo-api auth login"）。
 
 - 调用 OIDC userinfo endpoint
-- 列式输出 uid + name
+- 列式输出 name + UID(anonymized)（name 在前）
 - JSON 输出完整 userinfo 响应
 
 ---
@@ -1299,7 +1299,7 @@ await program.parseAsync(process.argv)
 | A4 | `memo-api auth login` OIDC 回调 error | 输出 OIDC 错误描述并退出 |
 | A5 | `memo-api auth login` 浏览器打开失败 | 打印 authorization URL 到 stderr，等待手动操作 |
 | A6 | `memo-api auth login` 已登录再次执行 | 覆盖旧 at/rt |
-| A7 | `memo-api auth whoami` (OIDC at 有效) | 列式输出 uid + name |
+| A7 | `memo-api auth whoami` (OIDC at 有效) | 列式输出 name + UID(anonymized) |
 | A8 | `memo-api auth whoami -O json` (OIDC at 有效) | JSON 输出完整 userinfo |
 | A9 | `memo-api auth whoami` (使用 apiToken) | 报错 "whoami 仅支持 OIDC 登录" |
 | A10 | 无任何凭据执行 `memo-api voc get` | 提示 "请通过 -T、MAIMEMO_API_TOKEN 提供 Token，或执行 memo-api auth login 登录" |

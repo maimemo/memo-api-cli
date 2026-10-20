@@ -56,7 +56,7 @@ memo-api auth <action>
 调用 OIDC userinfo endpoint 获取当前用户信息。
 
 - 仅支持 OIDC at 鉴权；若当前使用的是 `apiToken`，报错提示 "whoami 仅支持 OIDC 登录，请先执行 memo-api auth login"
-- column 模式：stdout 列式输出 `uid` + `name`
+- column 模式：stdout 列式输出 `name` + `UID(anonymized)`（name 在前）
 - json 模式：stdout 输出 userinfo 完整响应
 - 不注册到 `default-fields.ts`
 
