@@ -10,7 +10,7 @@ import { vocCmd } from "./commands/voc.js";
 import { studyCmd } from "./commands/study.js";
 import { resolveToken } from "./lib/auth.js";
 import { setOidcVerbose } from "./lib/oidc.js";
-import { setColor, setShowHeader, setSelectedFields } from "./output.js";
+import { setColor, setShowHeader, setSelectedFields, printInfo } from "./output.js";
 import { setVerbose } from "./client.js";
 
 await yargs(hideBin(process.argv))
@@ -63,6 +63,9 @@ await yargs(hideBin(process.argv))
       const result = await resolveToken({ token: argv.token });
       (argv as any).token = result.token;
       (argv as any)._tokenSource = result.source;
+      if (argv.verbose) {
+        printInfo(`> Token 来源: ${result.source}`);
+      }
     }
   })
 

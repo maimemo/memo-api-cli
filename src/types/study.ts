@@ -1,7 +1,7 @@
 // 墨墨开放 API — 学习数据 (study) 类型定义
 // 来源: maimemo/openapi/study/v1/study.proto
 
-import type { StudyProgress, StudyRecord, StudyTodayItem } from "./study_model.js";
+import type { StudyProgress, StudyRecord, StudyRecordTag, StudyTodayItem } from "./study_model.js";
 
 export type GetStudyProgressResponse = {
   progress: StudyProgress;
@@ -26,6 +26,7 @@ export type QueryStudyRecordsRequest = {
   };
   voc_ids: string[];
   spellings: string[];
+  tags?: StudyRecordTag[];
   as_count: boolean;
   limit: number;
 };

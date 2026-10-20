@@ -479,6 +479,52 @@ describe("output", () => {
       }
     });
 
+    it("does not convert pure numeric time values (durations) to dates", () => {
+      setColor(false);
+      let captured = "";
+      const original = process.stdout.write;
+      process.stdout.write = ((chunk: string) => {
+        captured += chunk;
+        return true;
+      }) as typeof process.stdout.write;
+
+      try {
+        printColumns([
+          { id: "1", study_time: 3600, note: "test" },
+          { id: "2", study_time: 0, note: "test" },
+        ]);
+        const lines = captured.split("\n").filter(Boolean);
+        const row1 = lines[1]!.split("\t").map((c) => c.trim());
+        const row2 = lines[2]!.split("\t").map((c) => c.trim());
+        assert.strictEqual(row1[1], "3600", lines[1]);
+        assert.strictEqual(row2[1], "0", lines[2]);
+        assert.ok(!captured.includes("3600-01-01"), captured);
+        assert.ok(!captured.includes("2000-01-01"), captured);
+      } finally {
+        process.stdout.write = original;
+      }
+    });
+
+    it("displays empty array as empty cell", () => {
+      setColor(false);
+      let captured = "";
+      const original = process.stdout.write;
+      process.stdout.write = ((chunk: string) => {
+        captured += chunk;
+        return true;
+      }) as typeof process.stdout.write;
+
+      try {
+        printColumns([
+          { id: "1", tags: [], note: "test" },
+        ]);
+        const dataLine = captured.split("\n")[1]!;
+        assert.ok(!dataLine.includes("[]"), dataLine);
+      } finally {
+        process.stdout.write = original;
+      }
+    });
+
     it("converts _date fields from ISO to local timezone", () => {
       setColor(false);
       let captured = "";

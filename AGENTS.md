@@ -160,7 +160,7 @@ echo '{"spelling":"apple"}' | memo-api voc get
 
 ## Important Rules
 
-- **Before making changes**: Read the relevant plan documents in `docs/plans/` (currently `cli.md` and `project.md`)
+- **Before making changes**: Read the relevant plan documents in `docs/plans/` (currently `cli.md`, `project.md`, `auth.md`, and `migrate_yargs.md`)
 - **After making changes**: Sync updates back to the plan documents to keep them accurate
 - **Test coverage**: Every change must be covered by tests. Add or update test files in `test/` mirroring the `src/` structure
 
@@ -178,7 +178,7 @@ echo '{"spelling":"apple"}' | memo-api voc get
 ## Additional Notes
 
 - **No database** — the tool is a stateless CLI client that calls a remote HTTP API
-- **Config file**: `~/.config/memo-api.json` with `{ "apiToken": "...", "at": {...}, "rt": {...} }`
+- **Config file**: `~/.config/memo-api.json` with `{ "apiToken": "...", "at": {...}, "rt": {...} }`; path can be overridden via the `MEMO_API_CONFIG_PATH` env var (tests use this to stay isolated from the real file)
 - **Timeout**: HTTP requests time out after 30 seconds
 - **Token priority**: `-T` flag > `MAIMEMO_API_TOKEN` env var > config `apiToken` > config OIDC `at` (auto-refreshed)
 - **CJK support**: Column alignment uses `string-width` (not `.length`) for accurate CJK character width

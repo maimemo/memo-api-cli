@@ -50,6 +50,8 @@ Token 获取优先级：
 3. `~/.config/memo-api.json` 中的 `apiToken` 字段（老式 API Token）
 4. `~/.config/memo-api.json` 中的 OIDC `at` 字段（自动刷新，过期时用 `rt` 刷新）
 
+> 配置文件默认路径为 `~/.config/memo-api.json`，可通过 `MEMO_API_CONFIG_PATH` 环境变量覆盖（测试与多账号场景使用）。
+
 ### OIDC 登录
 
 CLI 新增 `memo-api auth login` 子命令，通过 OIDC PKCE 流程获取 access_token 和 refresh_token 并保存到配置文件。
@@ -106,7 +108,7 @@ echo '{"id":"note_id_123"}' | memo-api note delete -f
 
 ### 数组参数约定
 
-数组类型参数（`--tags`、`--ids`、`--voc-ids`、`--spellings`）支持两种输入方式：
+数组类型参数（`--tag`、`--id`、`--voc-id`、`--spelling` 等）支持两种输入方式（`study records --tag` 除外，仅支持重复 flag）：
 
 **方式 A：重复 flag**
 ```
@@ -128,10 +130,10 @@ memo-api note <action> [options]
 
 | Action | HTTP | API |
 |--------|------|-----|
-| `list` | GET /api/v1/notes | ListNotes |
-| `create` | POST /api/v1/notes | CreateNote |
-| `update` | POST /api/v1/notes/{id} | UpdateNote |
-| `delete` | DELETE /api/v1/notes/{id} | DeleteNote |
+| `list` | GET /api/v1/memo/notes | ListNotes |
+| `create` | POST /api/v1/memo/notes | CreateNote |
+| `update` | POST /api/v1/memo/notes/{id} | UpdateNote |
+| `delete` | DELETE /api/v1/memo/notes/{id} | DeleteNote |
 
 ### `note list` — 获取单词的助记列表
 
@@ -221,10 +223,10 @@ memo-api interp <action> [options]          # 别名
 
 | Action | HTTP | API |
 |--------|------|-----|
-| `list` | GET /api/v1/interpretations | ListInterpretations |
-| `create` | POST /api/v1/interpretations | CreateInterpretation |
-| `update` | POST /api/v1/interpretations/{id} | UpdateInterpretation |
-| `delete` | DELETE /api/v1/interpretations/{id} | DeleteInterpretation |
+| `list` | GET /api/v1/memo/interpretations | ListInterpretations |
+| `create` | POST /api/v1/memo/interpretations | CreateInterpretation |
+| `update` | POST /api/v1/memo/interpretations/{id} | UpdateInterpretation |
+| `delete` | DELETE /api/v1/memo/interpretations/{id} | DeleteInterpretation |
 
 ### `interpretation list` — 获取单词的释义列表
 
@@ -296,10 +298,10 @@ memo-api phrase <action> [options]
 
 | Action | HTTP | API |
 |--------|------|-----|
-| `list` | GET /api/v1/phrases | ListPhrases |
-| `create` | POST /api/v1/phrases | CreatePhrase |
-| `update` | POST /api/v1/phrases/{id} | UpdatePhrase |
-| `delete` | DELETE /api/v1/phrases/{id} | DeletePhrase |
+| `list` | GET /api/v1/memo/phrases | ListPhrases |
+| `create` | POST /api/v1/memo/phrases | CreatePhrase |
+| `update` | POST /api/v1/memo/phrases/{id} | UpdatePhrase |
+| `delete` | DELETE /api/v1/memo/phrases/{id} | DeletePhrase |
 
 ### `phrase list` — 获取单词的例句列表
 
@@ -358,11 +360,11 @@ memo-api notepad <action> [options]
 
 | Action | HTTP | API |
 |--------|------|-----|
-| `list` | GET /api/v1/notepads | ListNotepads |
-| `get` | GET /api/v1/notepads/{id} | GetNotepad |
-| `create` | POST /api/v1/notepads | CreateNotepad |
-| `update` | POST /api/v1/notepads/{id} | UpdateNotepad |
-| `delete` | DELETE /api/v1/notepads/{id} | DeleteNotepad |
+| `list` | GET /api/v1/memo/notepads | ListNotepads |
+| `get` | GET /api/v1/memo/notepads/{id} | GetNotepad |
+| `create` | POST /api/v1/memo/notepads | CreateNotepad |
+| `update` | POST /api/v1/memo/notepads/{id} | UpdateNotepad |
+| `delete` | DELETE /api/v1/memo/notepads/{id} | DeleteNotepad |
 
 ### `notepad list` — 查询云词本
 
@@ -438,8 +440,8 @@ memo-api voc <action> [options]             # 别名
 
 | Action | HTTP | API |
 |--------|------|-----|
-| `get` | GET /api/v1/vocabulary | GetVocabulary |
-| `query` | POST /api/v1/vocabulary/query | ListVocabulary |
+| `get` | GET /api/v1/memo/vocabulary | GetVocabulary |
+| `query` | POST /api/v1/memo/vocabulary/query | ListVocabulary |
 
 ### `voc get` — 按拼写获取单词
 
@@ -474,11 +476,11 @@ memo-api study <action> [options]
 
 | Action | HTTP | API |
 |--------|------|-----|
-| `progress` | POST /api/v1/study/get_study_progress | GetStudyProgress |
-| `today` | POST /api/v1/study/get_today_items | GetTodayItems |
-| `records` | POST /api/v1/study/query_study_records | QueryStudyRecords |
-| `add` | POST /api/v1/study/add_words | AddWords |
-| `advance` | POST /api/v1/study/advance_study | AdvanceStudy |
+| `progress` | POST /api/v1/memo/study/get_study_progress | GetStudyProgress |
+| `today` | POST /api/v1/memo/study/get_today_items | GetTodayItems |
+| `records` | POST /api/v1/memo/study/query_study_records | QueryStudyRecords |
+| `add` | POST /api/v1/memo/study/add_words | AddWords |
+| `advance` | POST /api/v1/memo/study/advance_study | AdvanceStudy |
 
 ### `study progress` — 获取今日学习进度
 
@@ -511,7 +513,7 @@ memo-api study today [-F] [--no-finished] [-n] [--no-new] [-v <id> ...] [-s <wor
 ### `study records` — 查询学习记录
 
 ```
-memo-api study records [-S <iso8601>] [-E <iso8601>] [-v <id> ...] [-s <word> ...] [-c] [-l <n>]
+memo-api study records [-S <iso8601>] [-E <iso8601>] [-v <id> ...] [-s <word> ...] [-t <tag> ...] [-c] [-l <n>]
 ```
 
 | 参数 | 短名 | 类型 | 必需 | 说明 |
@@ -520,6 +522,7 @@ memo-api study records [-S <iso8601>] [-E <iso8601>] [-v <id> ...] [-s <word> ..
 | `--next-study-end <iso8601>` | `-E` | string | 否 | 下次学习日期截止（ISO 8601，北京时区） |
 | `--voc-id <id>` | `-v` | string[] | 否 | 按单词 ID 筛选（可重复 / stdin `-`） |
 | `--spelling <word>` | `-s` | string[] | 否 | 按拼写筛选（可重复 / stdin `-`） |
+| `--tag <tag>` | `-t` | string[] | 否 | 按标签筛选（可重复，目前仅支持 `STICKING` 顽固单词；与 `-v`/`-s` 同用时不生效） |
 | `--count` | `-c` | flag | 否 | 仅返回计数 |
 | `--limit <n>` | `-l` | number | 否 | 最大返回数，默认 50，上限 1000 |
 
@@ -528,12 +531,13 @@ memo-api study records [-S <iso8601>] [-E <iso8601>] [-v <id> ...] [-s <word> ..
 ### `study add` — 添加单词到学习计划
 
 ```
-memo-api study add -I <id> [-I <id> ...] [-a]
+memo-api study add (-I <id> | -w <word>) [...] [-a]
 ```
 
 | 参数 | 短名 | 类型 | 必需 | 说明 |
 |------|------|------|------|------|
-| `--id <id>` | `-I` | string[] | **是** | 单词 ID 列表（可重复 / stdin `-`，最多 1000） |
+| `--id <id>` | `-I` | string[] | 二选一 | 单词 ID 列表（可重复 / stdin `-`，与 `--word` 合计最多 1000） |
+| `--word <word>` | `-w` | string[] | 二选一 | 单词拼写列表（自动解析为 ID，可重复 / stdin `-`） |
 | `--advance` | `-a` | flag | 否 | 一并提前复习 |
 
 ---
@@ -541,12 +545,13 @@ memo-api study add -I <id> [-I <id> ...] [-a]
 ### `study advance` — 提前复习
 
 ```
-memo-api study advance -v <id> [-v <id> ...]
+memo-api study advance (-v <id> | -w <word>) [...]
 ```
 
 | 参数 | 短名 | 类型 | 必需 | 说明 |
 |------|------|------|------|------|
-| `--voc-id <id>` | `-v` | string[] | **是** | 单词 ID 列表（可重复 / stdin `-`，最多 1000） |
+| `--voc-id <id>` | `-v` | string[] | 二选一 | 单词 ID 列表（可重复 / stdin `-`，与 `--word` 合计最多 1000） |
+| `--word <word>` | `-w` | string[] | 二选一 | 单词拼写列表（自动解析为 ID，可重复 / stdin `-`） |
 
 ---
 
@@ -590,13 +595,13 @@ memo-api auth whoami
 
 ## `--word` 自动解析
 
-部分 API 仅接受 `voc_id` 而不提供按拼写查询的等价参数（note list/create、interpretation list/create、phrase list/create）。`--word` 参数提供便捷方式：先调用 `voc get --spelling <word>` 获取单词 ID，再执行原操作。
+部分 API 仅接受 `voc_id` 而不提供按拼写查询的等价参数（note list/create、interpretation list/create、phrase list/create）。`--word` 参数提供便捷方式：先调用 `voc get --spelling <word>` 获取单词 ID，再执行原操作。`study add`、`study advance` 原生接受 ID 列表，同样提供 `-w/--word` 拼写解析（可与 `--id`/`--voc-id` 同时使用，合计最多 1000）。
 
 | 行为 | 说明 |
 |------|------|
 | `--word` 与 `--voc-id` 互斥 | 必须二选一 |
 | 解析失败 | 若单词不存在则报错退出（exit 1），不执行后续操作 |
-| 实现 | 内部调用 `GET /api/v1/vocabulary` |
+| 实现 | 内部调用 `GET /api/v1/memo/vocabulary` |
 | 已有 `--spelling` 的命令不受影响 | `study today`、`study records`、`voc query` 已有原生拼写查询 |
 | stdin JSON 模式下无效 | JSON 中已有 voc_id 时不需要解析 |
 
@@ -625,7 +630,7 @@ memo-api auth whoami
 | `-l` | `--limit` | notepad, study |
 | `-I` | `--id` | notepad, voc, study |
 | `-n` | `--note` / `--new` | note (note), study (new) |
-| `-t` | `--type` / `--title` | note (type), notepad (title) |
+| `-t` | `--type` / `--title` / `--tag` | note (type), notepad (title), study records (tag) |
 | `-c` | `--content` / `--count` | notepad (content), study (count) |
 
 ### 资源专属
@@ -1037,12 +1042,12 @@ await program.parseAsync(process.argv)
 | 完整名称 | 别名 | HTTP 路径前缀 |
 |----------|------|---------------|
 | `auth` | — | OIDC endpoints |
-| `note` | — | `/api/v1/notes` |
-| `interpretation` | `interp` | `/api/v1/interpretations` |
-| `phrase` | — | `/api/v1/phrases` |
-| `notepad` | — | `/api/v1/notepads` |
-| `vocabulary` | `voc` | `/api/v1/vocabulary` |
-| `study` | — | `/api/v1/study` |
+| `note` | — | `/api/v1/memo/notes` |
+| `interpretation` | `interp` | `/api/v1/memo/interpretations` |
+| `phrase` | — | `/api/v1/memo/phrases` |
+| `notepad` | — | `/api/v1/memo/notepads` |
+| `vocabulary` | `voc` | `/api/v1/memo/vocabulary` |
+| `study` | — | `/api/v1/memo/study` |
 
 ---
 
@@ -1092,10 +1097,10 @@ await program.parseAsync(process.argv)
 
 | ID | 用例 | 预期 |
 |----|------|------|
-| N1 | `memo-api note list -v xxx` | 调用 GET /api/v1/notes?voc_id=xxx |
-| N2 | `memo-api note list -w apple` | 先 GET /api/v1/vocabulary?spelling=apple，再 list |
-| N3 | `memo-api note create -v xxx -t 谐音 -n "助记"` | POST /api/v1/notes body `{note:{voc_id,note_type,note}}` |
-| N4 | `memo-api note update id123 -t 谐音 -n "新"` | POST /api/v1/notes/id123 |
+| N1 | `memo-api note list -v xxx` | 调用 GET /api/v1/memo/notes?voc_id=xxx |
+| N2 | `memo-api note list -w apple` | 先 GET /api/v1/memo/vocabulary?spelling=apple，再 list |
+| N3 | `memo-api note create -v xxx -t 谐音 -n "助记"` | POST /api/v1/memo/notes body `{note:{voc_id,note_type,note}}` |
+| N4 | `memo-api note update id123 -t 谐音 -n "新"` | POST /api/v1/memo/notes/id123 |
 | N5 | `memo-api note delete id123` | 提示确认，输入 `y` 后 DELETE |
 | N6 | `memo-api note delete id123 -f` | 不提示，直接 DELETE |
 | N7 | `memo-api note list` (缺参数) | 报错：缺少 --voc-id 或 --word |
@@ -1105,10 +1110,10 @@ await program.parseAsync(process.argv)
 
 | ID | 用例 | 预期 |
 |----|------|------|
-| I1 | `memo-api interp list -v xxx` | GET /api/v1/interpretations?voc_id=xxx |
-| I2 | `memo-api interp create -v xxx -i "释义"` | POST /api/v1/interpretations（默认 status=PUBLISHED） |
+| I1 | `memo-api interp list -v xxx` | GET /api/v1/memo/interpretations?voc_id=xxx |
+| I2 | `memo-api interp create -v xxx -i "释义"` | POST /api/v1/memo/interpretations（默认 status=PUBLISHED） |
 | I3 | `memo-api interp create -w apple -i "释义" -g A -g B -s UNPUBLISHED` | `-w` 解析后创建，带标签和状态 |
-| I4 | `memo-api interp update id123 -i "新" -g A -s DELETED` | POST /api/v1/interpretations/id123 |
+| I4 | `memo-api interp update id123 -i "新" -g A -s DELETED` | POST /api/v1/memo/interpretations/id123 |
 | I5 | `memo-api interp delete id123 -f` | DELETE 无确认 |
 | I6 | `memo-api interpretation list -v xxx` | 全名 `interpretation` 等同 `interp` |
 
@@ -1116,29 +1121,29 @@ await program.parseAsync(process.argv)
 
 | ID | 用例 | 预期 |
 |----|------|------|
-| P1 | `memo-api phrase list -v xxx` | GET /api/v1/phrases?voc_id=xxx |
-| P2 | `memo-api phrase create -v xxx -p "Hello" -i "你好" -g A -o "book"` | POST /api/v1/phrases |
-| P3 | `memo-api phrase update id123 -p "Hi" -i "嗨" -g A -o "web"` | POST /api/v1/phrases/id123 |
+| P1 | `memo-api phrase list -v xxx` | GET /api/v1/memo/phrases?voc_id=xxx |
+| P2 | `memo-api phrase create -v xxx -p "Hello" -i "你好" -g A -o "book"` | POST /api/v1/memo/phrases |
+| P3 | `memo-api phrase update id123 -p "Hi" -i "嗨" -g A -o "web"` | POST /api/v1/memo/phrases/id123 |
 | P4 | `memo-api phrase delete id123 -f` | DELETE 无确认 |
 
 #### 6. notepad 命令
 
 | ID | 用例 | 预期 |
 |----|------|------|
-| O1 | `memo-api notepad list` | GET /api/v1/notepads（默认 limit=10, offset=0） |
+| O1 | `memo-api notepad list` | GET /api/v1/memo/notepads（默认 limit=10, offset=0） |
 | O2 | `memo-api notepad list -l 5 -o 10 -I id1 -I id2` | GET 带 query params |
-| O3 | `memo-api notepad get id123` | GET /api/v1/notepads/id123 |
-| O4 | `memo-api notepad create -t "标题" -c "内容"` | POST /api/v1/notepads（默认 status=PUBLISHED） |
+| O3 | `memo-api notepad get id123` | GET /api/v1/memo/notepads/id123 |
+| O4 | `memo-api notepad create -t "标题" -c "内容"` | POST /api/v1/memo/notepads（默认 status=PUBLISHED） |
 | O5 | `memo-api notepad create -t "T" -c "C" -b "B" -g A -s UNPUBLISHED` | POST 带全部字段 |
-| O6 | `memo-api notepad update id123 -t "T" -c "C" -b "B" -g A -s PUBLISHED` | POST /api/v1/notepads/id123 |
+| O6 | `memo-api notepad update id123 -t "T" -c "C" -b "B" -g A -s PUBLISHED` | POST /api/v1/memo/notepads/id123 |
 | O7 | `memo-api notepad delete id123 -f` | DELETE 无确认 |
 
 #### 7. voc 命令
 
 | ID | 用例 | 预期 |
 |----|------|------|
-| V1 | `memo-api voc get -s apple` | GET /api/v1/vocabulary?spelling=apple |
-| V2 | `memo-api voc query -s apple -s banana` | POST /api/v1/vocabulary/query body `{spellings:["apple","banana"]}` |
+| V1 | `memo-api voc get -s apple` | GET /api/v1/memo/vocabulary?spelling=apple |
+| V2 | `memo-api voc query -s apple -s banana` | POST /api/v1/memo/vocabulary/query body `{spellings:["apple","banana"]}` |
 | V3 | `memo-api voc query -I id1 -I id2` | POST body `{ids:["id1","id2"]}` |
 | V4 | `memo-api voc query` (缺参数) | 报错：需 --spelling 或 --id |
 | V5 | `memo-api voc query -s apple -I id1` | 报错：互斥 |
@@ -1148,23 +1153,24 @@ await program.parseAsync(process.argv)
 
 | ID | 用例 | 预期 |
 |----|------|------|
-| S1 | `memo-api study progress` | POST /api/v1/study/get_study_progress（空 body） |
-| S2 | `memo-api study today` | POST /api/v1/study/get_today_items（默认 body） |
+| S1 | `memo-api study progress` | POST /api/v1/memo/study/get_study_progress（空 body） |
+| S2 | `memo-api study today` | POST /api/v1/memo/study/get_today_items（默认 body） |
 | S3 | `memo-api study today -F -n -l 10` | POST 带 is_finished=true, is_new=true, limit=10 |
 | S4 | `memo-api study today --no-finished --no-new -v id1 -v id2` | POST 带 is_finished=false, is_new=false, voc_ids |
 | S5 | `memo-api study today -s apple -s banana` | POST 带 spellings |
 | S6 | `memo-api study records -S "2026-01-01T00:00:00+08:00" -E "2026-01-02T00:00:00+08:00"` | POST 带 next_study_date range |
 | S7 | `memo-api study records -c` | POST 带 as_count=true |
-| S8 | `memo-api study add -I id1 -I id2` | POST /api/v1/study/add_words |
+| S8 | `memo-api study records -t STICKING` | POST 带 tags=["STICKING"] |
 | S9 | `memo-api study add -I id1 -a` | POST 带 advance=true |
-| S10 | `memo-api study advance -v id1 -v id2` | POST /api/v1/study/advance_study |
+| S10 | `memo-api study advance -v id1 -v id2` | POST /api/v1/memo/study/advance_study |
 | S11 | `memo-api study add` (缺 -I) | 报错：缺少 --id |
+| S12 | `memo-api study add -I id1 -I id2` | POST /api/v1/memo/study/add_words |
 
 #### 9. `--word` 自动解析
 
 | ID | 用例 | 预期 |
 |----|------|------|
-| W1 | `memo-api note list -w apple` | 内部先 GET /api/v1/vocabulary?spelling=apple，再 list |
+| W1 | `memo-api note list -w apple` | 内部先 GET /api/v1/memo/vocabulary?spelling=apple，再 list |
 | W2 | `memo-api note create -w nonexist -t 谐音 -n "text"` | voc get 返回空 → 报错退出 |
 | W3 | `memo-api interp list -w apple -O json` | 先解析单词，再以 JSON 输出释义列表 |
 | W4 | `memo-api phrase create -w apple -p "Hi" -i "嗨"` | 解析后创建 |
@@ -1174,12 +1180,12 @@ await program.parseAsync(process.argv)
 | ID | 用例 | 预期 |
 |----|------|------|
 | J1 | `echo '{"note":{"voc_id":"x","note_type":"t","note":"n"}}' \| memo-api note create` | 直接 POST JSON，忽略命令行参数 |
-| J2 | `echo '{"voc_id":"x"}' \| memo-api note list` | GET /api/v1/notes?voc_id=x |
-| J3 | `echo '{"id":"id123"}' \| memo-api note delete -f` | DELETE /api/v1/notes/id123 |
-| J4 | `echo '{"id":"id123","note":{"note_type":"t","note":"n"}}' \| memo-api note update` | POST /api/v1/notes/id123，取 JSON 中的 id |
-| J5 | `echo '{"spelling":"apple"}' \| memo-api voc get` | GET /api/v1/vocabulary?spelling=apple |
-| J6 | `echo '{"spellings":["a","b"]}' \| memo-api voc query` | POST /api/v1/vocabulary/query |
-| J7 | `echo '{"notepad":{"title":"T","content":"C"}}' \| memo-api notepad create` | POST /api/v1/notepads |
+| J2 | `echo '{"voc_id":"x"}' \| memo-api note list` | GET /api/v1/memo/notes?voc_id=x |
+| J3 | `echo '{"id":"id123"}' \| memo-api note delete -f` | DELETE /api/v1/memo/notes/id123 |
+| J4 | `echo '{"id":"id123","note":{"note_type":"t","note":"n"}}' \| memo-api note update` | POST /api/v1/memo/notes/id123，取 JSON 中的 id |
+| J5 | `echo '{"spelling":"apple"}' \| memo-api voc get` | GET /api/v1/memo/vocabulary?spelling=apple |
+| J6 | `echo '{"spellings":["a","b"]}' \| memo-api voc query` | POST /api/v1/memo/vocabulary/query |
+| J7 | `echo '{"notepad":{"title":"T","content":"C"}}' \| memo-api notepad create` | POST /api/v1/memo/notepads |
 | J8 | `echo 'not json' \| memo-api note list -v xxx` | stdin 非 JSON → 视作普通输入（数组 `-` 模式），使用命令行参数 |
 | J9 | stdin 为 TTY 时 `memo-api note create -v xxx -t t -n n` | 正常使用命令行参数 |
 | J10 | `echo '{"spelling":"invalid"}' \| memo-api note list` | JSON 缺少 voc_id → API 返回错误（不校验），透传 |
@@ -1313,7 +1319,7 @@ await program.parseAsync(process.argv)
 2. **依赖**：`commander`、`chalk`、`string-width`
 3. **HTTP 客户端**：使用 `fetch`（Node 18+ 内置）
 4. **配置**：读取 `~/.config/memo-api.json` 中的 `apiToken` 字段
-5. **配置文件位置**：`~/.config/memo-api.json`
+5. **配置文件位置**：`~/.config/memo-api.json`（可用 `MEMO_API_CONFIG_PATH` 环境变量覆盖）
 6. **stdin 检测**：`process.stdin.isTTY` 判断是否管道输入；尝试 `JSON.parse` 判断是否 JSON 模式
 7. **parseAsync**：入口使用 `await program.parseAsync(process.argv)`（commander v12+ 兼容 `.action(async () => {})` 时须手动 `parseAsync`）
 8. **数组 collect**：通过 `new Option('-g, --tag <tag>').argParser(fn, [])` 实现重复 flag 累积

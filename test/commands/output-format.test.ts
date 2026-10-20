@@ -46,7 +46,7 @@ describe("output format (api + print)", () => {
     it("prints tab-separated columns for note list response", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({
           notes: [
             { id: "n1", note_type: "谐音", note: "苹果=apple", status: "PUBLISHED" },
@@ -55,7 +55,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -85,7 +85,7 @@ describe("output format (api + print)", () => {
     it("collapses newlines from API response in column output", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({
           notes: [
             {
@@ -98,7 +98,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -126,7 +126,7 @@ describe("output format (api + print)", () => {
       const longNote = "a".repeat(250);
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({
           notes: [
             { id: "n1", note_type: "联想", note: longNote, status: "PUBLISHED" },
@@ -134,7 +134,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -160,7 +160,7 @@ describe("output format (api + print)", () => {
       const longNote = "a".repeat(250);
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({
           notes: [
             { id: "n1", note_type: "联想", note: longNote, status: "PUBLISHED" },
@@ -168,7 +168,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -196,7 +196,7 @@ describe("output format (api + print)", () => {
       const longText = "x".repeat(250);
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({
           notes: [
             { id: longText, note_type: "谐音", note: "short note", status: "PUBLISHED" },
@@ -204,7 +204,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -230,7 +230,7 @@ describe("output format (api + print)", () => {
     it("skips header when showHeader is false (--no-header)", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({
           notes: [
             { id: "n1", note_type: "谐音", note: "test", status: "PUBLISHED" },
@@ -238,7 +238,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -264,7 +264,7 @@ describe("output format (api + print)", () => {
     it("shows only selected fields when setSelectedFields is set (--fields)", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({
           notes: [
             { id: "n1", note_type: "谐音", note: "test", status: "PUBLISHED" },
@@ -273,7 +273,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -300,11 +300,11 @@ describe("output format (api + print)", () => {
     it("shows (empty) for empty API response in column mode", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({ notes: [] }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -334,7 +334,7 @@ describe("output format (api + print)", () => {
     it("handles CJK-aligned columns from API response", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notepads/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notepads/, method: "GET" })
         .reply(200, wrap({
           notepads: [
             { id: "np-1", title: "暂无简介", brief: "短简介" },
@@ -343,7 +343,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notepads: Array<Record<string, string>> }>(
-        "/api/v1/notepads",
+        "/api/v1/memo/notepads",
         { method: "GET", query: { limit: "10", offset: "0" } },
         "token",
       );
@@ -366,7 +366,7 @@ describe("output format (api + print)", () => {
     it("adds fields with + prefix in --fields", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({
           notes: [
             { id: "n1", note_type: "谐音", note: "test", status: "PUBLISHED" },
@@ -374,7 +374,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -401,7 +401,7 @@ describe("output format (api + print)", () => {
     it("removes fields with - prefix in --fields", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({
           notes: [
             { id: "n1", note_type: "谐音", note: "test", status: "PUBLISHED" },
@@ -409,7 +409,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -438,11 +438,11 @@ describe("output format (api + print)", () => {
     it("outputs formatted JSON from API response", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/vocabulary/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/vocabulary/, method: "GET" })
         .reply(200, wrap({ voc: { id: "v1", spelling: "apple" } }));
 
       const res = await api<{ voc?: { id: string; spelling: string } }>(
-        "/api/v1/vocabulary",
+        "/api/v1/memo/vocabulary",
         { method: "GET", query: { spelling: "apple" } },
         "token",
       );
@@ -456,11 +456,11 @@ describe("output format (api + print)", () => {
     it("outputs empty array as valid JSON", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({ notes: [] }));
 
       const res = await api<{ notes: unknown[] }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -474,7 +474,7 @@ describe("output format (api + print)", () => {
     it("--no-header and --fields do not affect JSON output", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notes/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notes/, method: "GET" })
         .reply(200, wrap({
           notes: [
             { id: "n1", note_type: "谐音", note: "test", status: "PUBLISHED" },
@@ -482,7 +482,7 @@ describe("output format (api + print)", () => {
         }));
 
       const res = await api<{ notes: Array<Record<string, string>> }>(
-        "/api/v1/notes",
+        "/api/v1/memo/notes",
         { method: "GET", query: { voc_id: "v1" } },
         "token",
       );
@@ -501,7 +501,7 @@ describe("output format (api + print)", () => {
     it("error output to stderr preserved during JSON mode", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/test/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/test/, method: "GET" })
         .reply(400, { errors: [{ code: "E1", message: "bad" }], data: null, success: false });
 
       let stderrOutput = "";
@@ -517,7 +517,7 @@ describe("output format (api + print)", () => {
       }) as typeof process.exit;
 
       try {
-        await api("/api/v1/test", { method: "GET" }, "token");
+        await api("/api/v1/memo/test", { method: "GET" }, "token");
       } catch {
         // expected
       } finally {

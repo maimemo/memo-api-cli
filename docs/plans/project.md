@@ -157,7 +157,7 @@ API 请求/响应的 TypeScript 类型定义来源于 `~/Projects/proto/maimemo.
 ### `src/client.ts` — HTTP 客户端
 
 ```
-api('/api/v1/notes', { method: 'GET', query: { voc_id: 'xxx' } }, token)
+api('/api/v1/memo/notes', { method: 'GET', query: { voc_id: 'xxx' } }, token)
 ```
 
 封装 `fetch`，自动添加 `Authorization` header、base URL、超时、错误映射（401/404/500 → 人类可读错误信息）。
@@ -166,7 +166,7 @@ api('/api/v1/notes', { method: 'GET', query: { voc_id: 'xxx' } }, token)
 
 ### `src/config.ts` — 配置
 
-读取 `~/.config/memo-api.json`，提取 `apiToken`。单一导出 `getConfig(): { apiToken?: string }`。
+读写 `~/.config/memo-api.json`（可用 `MEMO_API_CONFIG_PATH` 环境变量覆盖路径）。导出 `getConfigPath()`、`getConfig(): Config`、`writeConfig(config)`；`Config` 含 `apiToken` 与 OIDC `at`/`rt` 字段。
 
 ### `src/stdin.ts` — 标准输入
 
@@ -244,7 +244,7 @@ async function getUserInfo(at: string): Promise<{ sub: string; name: string }>
 async function resolveVocId(spelling: string, token: string): Promise<string>
 ```
 
-内部调用 `GET /api/v1/vocabulary?spelling=xxx`，失败抛错。
+内部调用 `GET /api/v1/memo/vocabulary?spelling=xxx`，失败抛错。
 
 ### `src/lib/confirm.ts` — 删除确认
 
@@ -356,7 +356,7 @@ describe('note list', () => {
   it('parses response', async () => {
     agent
       .get('https://open.maimemo.com')
-      .intercept({ path: '/api/v1/notes', query: { voc_id: 'xxx' } })
+      .intercept({ path: '/api/v1/memo/notes', query: { voc_id: 'xxx' } })
       .reply(200, { data: [{ id: '1', note: 'test' }] })
 
     const result = await /* action handler */
@@ -506,7 +506,7 @@ import('../dist/index.js')
   - [ ] 输入 `y`/`Y` 返回 true，其他取消
   - [ ] 管道 + 无 `--force` → 报错退出
 - [ ] `src/lib/word-resolve.ts`
-  - [ ] `resolveVocId(spelling, token)` — 调用 `GET /api/v1/vocabulary?spelling=xxx`
+  - [ ] `resolveVocId(spelling, token)` — 调用 `GET /api/v1/memo/vocabulary?spelling=xxx`
   - [ ] 单词不存在时抛错
   - [ ] 返回 `voc_id`
 
@@ -525,38 +525,38 @@ import('../dist/index.js')
   - [ ] `auth login` — 零参数 PKCE 登录
   - [ ] `auth whoami` — 调用 OIDC userinfo，仅 OIDC at 可用
 - [ ] `src/commands/note.ts`
-  - [ ] `note list` — GET /api/v1/notes?voc_id=xxx，`--voc-id` / `--word` 互斥
-  - [ ] `note create` — POST /api/v1/notes，`--voc-id`+`--type`+`--note`
-  - [ ] `note update <id>` — POST /api/v1/notes/{id}，`--type`+`--note`
-  - [ ] `note delete <id>` — DELETE /api/v1/notes/{id}，确认 + `--force`
+  - [ ] `note list` — GET /api/v1/memo/notes?voc_id=xxx，`--voc-id` / `--word` 互斥
+  - [ ] `note create` — POST /api/v1/memo/notes，`--voc-id`+`--type`+`--note`
+  - [ ] `note update <id>` — POST /api/v1/memo/notes/{id}，`--type`+`--note`
+  - [ ] `note delete <id>` — DELETE /api/v1/memo/notes/{id}，确认 + `--force`
   - [ ] 全部支持 stdin JSON 模式
 - [ ] `src/commands/interp.ts`
-  - [ ] `interp list` — GET /api/v1/interpretations?voc_id=xxx，`--voc-id` / `--word`
-  - [ ] `interp create` — POST /api/v1/interpretations，`--voc-id`+`--interpretation`+`--tag`+`--status`
-  - [ ] `interp update <id>` — POST /api/v1/interpretations/{id}，`--interpretation`+`--tag`+`--status`
-  - [ ] `interp delete <id>` — DELETE /api/v1/interpretations/{id}
+  - [ ] `interp list` — GET /api/v1/memo/interpretations?voc_id=xxx，`--voc-id` / `--word`
+  - [ ] `interp create` — POST /api/v1/memo/interpretations，`--voc-id`+`--interpretation`+`--tag`+`--status`
+  - [ ] `interp update <id>` — POST /api/v1/memo/interpretations/{id}，`--interpretation`+`--tag`+`--status`
+  - [ ] `interp delete <id>` — DELETE /api/v1/memo/interpretations/{id}
   - [ ] `interpretation` 别名 = `interp`
 - [ ] `src/commands/phrase.ts`
-  - [ ] `phrase list` — GET /api/v1/phrases?voc_id=xxx
-  - [ ] `phrase create` — POST /api/v1/phrases，`--voc-id`+`--phrase`+`--interpretation`+`--tag`+`--origin`
-  - [ ] `phrase update <id>` — POST /api/v1/phrases/{id}
-  - [ ] `phrase delete <id>` — DELETE /api/v1/phrases/{id}
+  - [ ] `phrase list` — GET /api/v1/memo/phrases?voc_id=xxx
+  - [ ] `phrase create` — POST /api/v1/memo/phrases，`--voc-id`+`--phrase`+`--interpretation`+`--tag`+`--origin`
+  - [ ] `phrase update <id>` — POST /api/v1/memo/phrases/{id}
+  - [ ] `phrase delete <id>` — DELETE /api/v1/memo/phrases/{id}
 - [ ] `src/commands/notepad.ts`
-  - [ ] `notepad list` — GET /api/v1/notepads，`--limit`+`--offset`+`--id`
-  - [ ] `notepad get <id>` — GET /api/v1/notepads/{id}
-  - [ ] `notepad create` — POST /api/v1/notepads，`--title`+`--content`+`--brief`+`--tag`+`--status`
-  - [ ] `notepad update <id>` — POST /api/v1/notepads/{id}
-  - [ ] `notepad delete <id>` — DELETE /api/v1/notepads/{id}
+  - [ ] `notepad list` — GET /api/v1/memo/notepads，`--limit`+`--offset`+`--id`
+  - [ ] `notepad get <id>` — GET /api/v1/memo/notepads/{id}
+  - [ ] `notepad create` — POST /api/v1/memo/notepads，`--title`+`--content`+`--brief`+`--tag`+`--status`
+  - [ ] `notepad update <id>` — POST /api/v1/memo/notepads/{id}
+  - [ ] `notepad delete <id>` — DELETE /api/v1/memo/notepads/{id}
 - [ ] `src/commands/voc.ts`
-  - [ ] `voc get` — GET /api/v1/vocabulary?spelling=xxx
-  - [ ] `voc query` — POST /api/v1/vocabulary/query，`--spelling` / `--id` 互斥，上限 1000
+  - [ ] `voc get` — GET /api/v1/memo/vocabulary?spelling=xxx
+  - [ ] `voc query` — POST /api/v1/memo/vocabulary/query，`--spelling` / `--id` 互斥，上限 1000
   - [ ] `vocabulary` 别名 = `voc`
 - [ ] `src/commands/study.ts`
-  - [ ] `study progress` — POST /api/v1/study/get_study_progress（空 body）
-  - [ ] `study today` — POST /api/v1/study/get_today_items，`--finished`/`--no-finished`/`--new`/`--no-new`/`--voc-id`/`--spelling`/`--limit`
-  - [ ] `study records` — POST /api/v1/study/query_study_records，`--next-study-start`/`--next-study-end`/`--voc-id`/`--spelling`/`--count`/`--limit`
-  - [ ] `study add` — POST /api/v1/study/add_words，`--id`+`--advance`
-  - [ ] `study advance` — POST /api/v1/study/advance_study，`--voc-id`
+  - [ ] `study progress` — POST /api/v1/memo/study/get_study_progress（空 body）
+  - [ ] `study today` — POST /api/v1/memo/study/get_today_items，`--finished`/`--no-finished`/`--new`/`--no-new`/`--voc-id`/`--spelling`/`--limit`
+  - [ ] `study records` — POST /api/v1/memo/study/query_study_records，`--next-study-start`/`--next-study-end`/`--voc-id`/`--spelling`/`--tag`/`--count`/`--limit`
+  - [ ] `study add` — POST /api/v1/memo/study/add_words，`--id`+`--advance`
+  - [ ] `study advance` — POST /api/v1/memo/study/advance_study，`--voc-id`
 
 ### Phase 7 — 测试
 

@@ -51,7 +51,7 @@ const listHandler = async (argv: PhraseListArgs) => {
   }
 
   const res = await api<ListPhrasesResponse>(
-    "/api/v1/phrases",
+    "/api/v1/memo/phrases",
     { method: "GET", query: { voc_id: vocId } },
     token,
   );
@@ -133,7 +133,7 @@ const createHandler = async (argv: PhraseCreateArgs) => {
   }
 
   const res = await api<CreatePhraseResponse>(
-    "/api/v1/phrases",
+    "/api/v1/memo/phrases",
     { method: "POST", body },
     token,
   );
@@ -202,7 +202,7 @@ const updateHandler = async (argv: PhraseUpdateArgs) => {
   }
 
   const res = await api<UpdatePhraseResponse>(
-    `/api/v1/phrases/${resolvedId}`,
+    `/api/v1/memo/phrases/${resolvedId}`,
     { method: "POST", body },
     token,
   );
@@ -239,7 +239,7 @@ const deleteHandler = async (argv: PhraseDeleteArgs) => {
   const ok = await confirmDelete("phrase", resolvedId, argv.force);
   if (!ok) process.exit(0);
 
-  await api<object>(`/api/v1/phrases/${resolvedId}`, { method: "DELETE" }, token);
+  await api<object>(`/api/v1/memo/phrases/${resolvedId}`, { method: "DELETE" }, token);
   printSuccess("已删除");
 };
 

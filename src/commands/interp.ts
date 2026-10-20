@@ -52,7 +52,7 @@ const listHandler = async (argv: InterpListArgs) => {
   }
 
   const res = await api<ListInterpretationsResponse>(
-    "/api/v1/interpretations",
+    "/api/v1/memo/interpretations",
     { method: "GET", query: { voc_id: vocId } },
     token,
   );
@@ -131,7 +131,7 @@ const createHandler = async (argv: InterpCreateArgs) => {
   }
 
   const res = await api<CreateInterpretationResponse>(
-    "/api/v1/interpretations",
+    "/api/v1/memo/interpretations",
     { method: "POST", body },
     token,
   );
@@ -198,7 +198,7 @@ const updateHandler = async (argv: InterpUpdateArgs) => {
   }
 
   const res = await api<UpdateInterpretationResponse>(
-    `/api/v1/interpretations/${resolvedId}`,
+    `/api/v1/memo/interpretations/${resolvedId}`,
     { method: "POST", body },
     token,
   );
@@ -235,7 +235,7 @@ const deleteHandler = async (argv: InterpDeleteArgs) => {
   const ok = await confirmDelete("interpretation", resolvedId, argv.force);
   if (!ok) process.exit(0);
 
-  await api<object>(`/api/v1/interpretations/${resolvedId}`, { method: "DELETE" }, token);
+  await api<object>(`/api/v1/memo/interpretations/${resolvedId}`, { method: "DELETE" }, token);
   printSuccess("已删除");
 };
 

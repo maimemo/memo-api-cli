@@ -45,7 +45,7 @@ const listHandler = async (argv: NoteListArgs) => {
   }
 
   const res = await api<ListNotesResponse>(
-    "/api/v1/notes",
+    "/api/v1/memo/notes",
     { method: "GET", query: { voc_id: vocId } },
     token,
   );
@@ -119,7 +119,7 @@ const createHandler = async (argv: NoteCreateArgs) => {
   }
 
   const res = await api<CreateNoteResponse>(
-    "/api/v1/notes",
+    "/api/v1/memo/notes",
     { method: "POST", body },
     token,
   );
@@ -180,7 +180,7 @@ const updateHandler = async (argv: NoteUpdateArgs) => {
   }
 
   const res = await api<UpdateNoteResponse>(
-    `/api/v1/notes/${resolvedId}`,
+    `/api/v1/memo/notes/${resolvedId}`,
     { method: "POST", body },
     token,
   );
@@ -225,7 +225,7 @@ const deleteHandler = async (argv: NoteDeleteArgs) => {
   }
 
   await api<object>(
-    `/api/v1/notes/${resolvedId}`,
+    `/api/v1/memo/notes/${resolvedId}`,
     { method: "DELETE" },
     token,
   );

@@ -26,11 +26,11 @@ describe("study commands (integration)", () => {
     it("fetches study progress", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/study\/get_study_progress/, method: "POST" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/study\/get_study_progress/, method: "POST" })
         .reply(200, wrap({ progress: { today_added: "5", today_review: "10" } }));
 
       const res = await api<{ progress: { today_added: string; today_review: string } }>(
-        "/api/v1/study/get_study_progress",
+        "/api/v1/memo/study/get_study_progress",
         { method: "POST", body: {} },
         "token",
       );
@@ -43,7 +43,7 @@ describe("study commands (integration)", () => {
     it("adds words by id", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/study/add_words", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/study/add_words", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.deepEqual(body.words, [{ id: "voc123" }]);
@@ -52,7 +52,7 @@ describe("study commands (integration)", () => {
         });
 
       const res = await api<{ added_count: number }>(
-        "/api/v1/study/add_words",
+        "/api/v1/memo/study/add_words",
         {
           method: "POST",
           body: { words: [{ id: "voc123" }], advance: false },
@@ -66,7 +66,7 @@ describe("study commands (integration)", () => {
     it("adds multiple words", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/study/add_words", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/study/add_words", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.deepEqual(body.words, [
@@ -78,7 +78,7 @@ describe("study commands (integration)", () => {
         });
 
       const res = await api<{ added_count: number }>(
-        "/api/v1/study/add_words",
+        "/api/v1/memo/study/add_words",
         {
           method: "POST",
           body: {
@@ -95,7 +95,7 @@ describe("study commands (integration)", () => {
     it("adds words with advance flag", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/study/add_words", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/study/add_words", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.equal(body.advance, true);
@@ -103,7 +103,7 @@ describe("study commands (integration)", () => {
         });
 
       const res = await api<{ added_count: number }>(
-        "/api/v1/study/add_words",
+        "/api/v1/memo/study/add_words",
         {
           method: "POST",
           body: {
@@ -122,7 +122,7 @@ describe("study commands (integration)", () => {
     it("fetches today items", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/study\/get_today_items/, method: "POST" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/study\/get_today_items/, method: "POST" })
         .reply(200, wrap({
           today_items: [
             { voc_id: "v1", spelling: "test", is_new: false, is_finished: false },
@@ -132,7 +132,7 @@ describe("study commands (integration)", () => {
       const res = await api<{
         today_items: Array<{ voc_id: string; spelling: string }>;
       }>(
-        "/api/v1/study/get_today_items",
+        "/api/v1/memo/study/get_today_items",
         { method: "POST", body: { voc_ids: [], spellings: [], limit: 50 } },
         "token",
       );
@@ -145,11 +145,11 @@ describe("study commands (integration)", () => {
     it("queries study records", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/study/query_study_records", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/study/query_study_records", method: "POST" })
         .reply(200, wrap({ records: [], count: 0 }));
 
       const res = await api<{ records: Array<unknown>; count: number }>(
-        "/api/v1/study/query_study_records",
+        "/api/v1/memo/study/query_study_records",
         {
           method: "POST",
           body: { voc_ids: [], spellings: [], as_count: false, limit: 50 },
@@ -160,13 +160,39 @@ describe("study commands (integration)", () => {
       assert.equal(res.count, 0);
       assert.equal(res.records.length, 0);
     });
+
+    it("queries study records with tags filter", async () => {
+      mockAgent
+        .get("https://open.maimemo.com")
+        .intercept({ path: "/open/api/v1/memo/study/query_study_records", method: "POST" })
+        .reply(200, (opts: { body?: string }) => {
+          const body = opts.body ? JSON.parse(opts.body) : {};
+          assert.deepEqual(body.tags, ["STICKING"]);
+          return wrap({
+            records: [{ voc_id: "v1", voc_spelling: "apple", tags: ["STICKING"] }],
+            count: 1,
+          });
+        });
+
+      const res = await api<{ records: Array<{ tags: string[] }>; count: number }>(
+        "/api/v1/memo/study/query_study_records",
+        {
+          method: "POST",
+          body: { voc_ids: [], spellings: [], tags: ["STICKING"], as_count: false, limit: 50 },
+        },
+        "token",
+      );
+
+      assert.equal(res.count, 1);
+      assert.deepEqual(res.records[0]!.tags, ["STICKING"]);
+    });
   });
 
   describe("advance", () => {
     it("advances study by voc_ids", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/study/advance_study", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/study/advance_study", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.deepEqual(body.voc_ids, ["v1", "v2"]);
@@ -174,7 +200,7 @@ describe("study commands (integration)", () => {
         });
 
       const res = await api<{ advanced_count: number }>(
-        "/api/v1/study/advance_study",
+        "/api/v1/memo/study/advance_study",
         { method: "POST", body: { voc_ids: ["v1", "v2"] } },
         "token",
       );
@@ -185,7 +211,7 @@ describe("study commands (integration)", () => {
     it("advances study by multiple voc_ids", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/study/advance_study", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/study/advance_study", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.deepEqual(body.voc_ids, ["v1", "v2", "v3"]);
@@ -193,7 +219,7 @@ describe("study commands (integration)", () => {
         });
 
       const res = await api<{ advanced_count: number }>(
-        "/api/v1/study/advance_study",
+        "/api/v1/memo/study/advance_study",
         { method: "POST", body: { voc_ids: ["v1", "v2", "v3"] } },
         "token",
       );

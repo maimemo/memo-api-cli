@@ -4,6 +4,7 @@ import { readStdin, tryParseJson } from "../stdin.js";
 import { printJson, printColumns, printError } from "../output.js";
 import { isJsonOutput, resolveArrayArg } from "../lib/helpers.js";
 import { resolveVocIdsBySpellings } from "../lib/word-resolve.js";
+import type { StudyRecordTag } from "../types/study_model.js";
 import type {
   GetStudyProgressResponse,
   GetTodayItemsRequest,
@@ -27,7 +28,7 @@ const progressHandler = async (argv: StudyProgressArgs) => {
   const token = (argv as any).token as string;
 
   const res = await api<GetStudyProgressResponse>(
-    "/api/v1/study/get_study_progress",
+    "/api/v1/memo/study/get_study_progress",
     { method: "POST", body: {} },
     token,
   );
@@ -97,7 +98,7 @@ const todayHandler = async (argv: StudyTodayArgs) => {
   }
 
   const res = await api<GetTodayItemsResponse>(
-    "/api/v1/study/get_today_items",
+    "/api/v1/memo/study/get_today_items",
     { method: "POST", body },
     token,
   );
@@ -117,6 +118,7 @@ interface StudyRecordsArgs {
   nextStudyEnd?: string;
   vocId?: string[];
   spelling?: string[];
+  tag?: string[];
   count?: boolean;
   limit?: number;
 }
@@ -127,6 +129,7 @@ const recordsBuilder = (yargs: Argv) =>
     .option("next-study-end", { alias: "E", type: "string", description: "下次学习日期截止（ISO 8601，北京时区）" })
     .option("voc-id", { alias: "v", type: "array", default: [] as string[], description: "按单词 ID 筛选（可重复）" })
     .option("spelling", { alias: "s", type: "array", default: [] as string[], description: "按拼写筛选（可重复）" })
+    .option("tag", { alias: "t", type: "array", default: [] as string[], choices: ["STICKING"], description: "按标签筛选（可重复，目前仅支持 STICKING 顽固单词；与 -v/-s 同用时不生效）" })
     .option("count", { alias: "c", type: "boolean", description: "仅返回计数" })
     .option("limit", { alias: "l", type: "number", default: 50, description: "最大返回数，默认 50，上限 1000" });
 
@@ -151,6 +154,10 @@ const recordsHandler = async (argv: StudyRecordsArgs) => {
       as_count: asCount,
       limit: argv.limit ?? 50,
     };
+    const tags = (argv.tag ?? []) as StudyRecordTag[];
+    if (tags.length > 0) {
+      body.tags = tags;
+    }
     if (argv.nextStudyStart || argv.nextStudyEnd) {
       body.next_study_date = {
         start: argv.nextStudyStart,
@@ -160,7 +167,7 @@ const recordsHandler = async (argv: StudyRecordsArgs) => {
   }
 
   const res = await api<QueryStudyRecordsResponse>(
-    "/api/v1/study/query_study_records",
+    "/api/v1/memo/study/query_study_records",
     { method: "POST", body },
     token,
   );
@@ -224,7 +231,7 @@ const addHandler = async (argv: StudyAddArgs) => {
   }
 
   const res = await api<AddWordsResponse>(
-    "/api/v1/study/add_words",
+    "/api/v1/memo/study/add_words",
     { method: "POST", body },
     token,
   );
@@ -275,7 +282,7 @@ const advanceHandler = async (argv: StudyAdvanceArgs) => {
   }
 
   const res = await api<AdvanceStudyResponse>(
-    "/api/v1/study/advance_study",
+    "/api/v1/memo/study/advance_study",
     { method: "POST", body },
     token,
   );
@@ -302,6 +309,7 @@ export const studyCmd: CommandModule = {
   $ memo-api study progress
   $ memo-api study today
   $ memo-api study records -c
+  $ memo-api study records -t STICKING
   $ memo-api study add -w apple -w banana
   $ memo-api study add --id voc123 --word happy
 `),

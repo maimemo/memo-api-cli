@@ -27,6 +27,11 @@ export type StudyTodayItem = {
   is_finished: boolean;
 };
 
+export type StudyRecordTag =
+  | "STUDY_RECORD_TAG_UNSPECIFIED"
+  | "STICKING"
+  | "WELL_FAMILIAR";
+
 export type StudyRecord = {
   voc_id: string;
   voc_spelling: string;
@@ -36,5 +41,5 @@ export type StudyRecord = {
   next_study_date?: string;
   last_response?: StudyResponse;
   study_count: number;
-  tags: Array<"STUDY_RECORD_TAG_UNSPECIFIED" | "STICKING" | "WELL_FAMILIAR">;
+  tags: StudyRecordTag[];
 };

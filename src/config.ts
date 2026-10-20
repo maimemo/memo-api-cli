@@ -13,11 +13,15 @@ export type Config = {
   rt?: TokenEntry;
 };
 
-const configPath = join(homedir(), ".config", "memo-api.json");
+const DEFAULT_CONFIG_PATH = join(homedir(), ".config", "memo-api.json");
+
+export function getConfigPath(): string {
+  return process.env["MEMO_API_CONFIG_PATH"] || DEFAULT_CONFIG_PATH;
+}
 
 export function getConfig(): Config {
   try {
-    const raw = readFileSync(configPath, "utf-8");
+    const raw = readFileSync(getConfigPath(), "utf-8");
     return JSON.parse(raw) as Config;
   } catch {
     return {};
@@ -25,6 +29,7 @@ export function getConfig(): Config {
 }
 
 export function writeConfig(config: Config): void {
+  const configPath = getConfigPath();
   const dir = dirname(configPath);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });

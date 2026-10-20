@@ -91,7 +91,7 @@ describe("voc get", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "apple" },
         response: { data: { voc: { id: "voc-001", spelling: "apple" } } },
       },
@@ -105,7 +105,7 @@ describe("voc get", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "apple" },
         response: { data: { voc: { id: "voc-001", spelling: "apple" } } },
       },
@@ -126,7 +126,7 @@ describe("voc get", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "nonexistent" },
         response: { data: {} },
       },
@@ -139,7 +139,7 @@ describe("voc get", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "apple" },
         response: { data: { voc: { id: "voc-001", spelling: "apple" } } },
       },
@@ -156,7 +156,7 @@ describe("voc query", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/vocabulary/query",
+        path: "/open/api/v1/memo/vocabulary/query",
         body: { spellings: ["apple", "banana"], ids: [] },
         response: { data: { voc: [{ id: "v1", spelling: "apple" }, { id: "v2", spelling: "banana" }] } },
       },
@@ -170,7 +170,7 @@ describe("voc query", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/vocabulary/query",
+        path: "/open/api/v1/memo/vocabulary/query",
         body: { spellings: [], ids: ["v1", "v2"] },
         response: { data: { voc: [{ id: "v1", spelling: "a" }, { id: "v2", spelling: "b" }] } },
       },
@@ -200,7 +200,7 @@ describe("note list", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/notes",
+        path: "/open/api/v1/memo/notes",
         query: { voc_id: "voc-001" },
         response: { data: { notes: [{ id: "n1", note_type: "谐音", note: "test", status: "PUBLISHED" }] } },
       },
@@ -214,13 +214,13 @@ describe("note list", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "apple" },
         response: { data: { voc: { id: "voc-001", spelling: "apple" } } },
       },
       {
         method: "GET",
-        path: "/open/api/v1/notes",
+        path: "/open/api/v1/memo/notes",
         query: { voc_id: "voc-001" },
         response: { data: { notes: [{ id: "n1", note_type: "谐音", note: "test", status: "PUBLISHED" }] } },
       },
@@ -247,13 +247,13 @@ describe("note create", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "apple" },
         response: { data: { voc: { id: "voc-001", spelling: "apple" } } },
       },
       {
         method: "POST",
-        path: "/open/api/v1/notes",
+        path: "/open/api/v1/memo/notes",
         body: { note: { voc_id: "voc-001", note_type: "谐音", note: "苹果记忆" } },
         response: { data: { note: { id: "n-new", note_type: "谐音", note: "苹果记忆", status: "PUBLISHED" } } },
       },
@@ -274,7 +274,7 @@ describe("note update", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/notes/n1",
+        path: "/open/api/v1/memo/notes/n1",
         body: { note: { note_type: "联想", note: "更新内容" } },
         response: { data: { note: { id: "n1", note_type: "联想", note: "更新内容", status: "PUBLISHED" } } },
       },
@@ -290,7 +290,7 @@ describe("note delete", () => {
     setMock([
       {
         method: "DELETE",
-        path: "/open/api/v1/notes/n1",
+        path: "/open/api/v1/memo/notes/n1",
         response: {},
       },
     ]);
@@ -306,7 +306,7 @@ describe("interp", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/interpretations",
+        path: "/open/api/v1/memo/interpretations",
         query: { voc_id: "voc-001" },
         response: { data: { interpretations: [{ id: "i1", interpretation: "n. 苹果", tags: ["考研"], status: "PUBLISHED" }] } },
       },
@@ -319,13 +319,13 @@ describe("interp", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "apple" },
         response: { data: { voc: { id: "voc-001", spelling: "apple" } } },
       },
       {
         method: "POST",
-        path: "/open/api/v1/interpretations",
+        path: "/open/api/v1/memo/interpretations",
         body: { interpretation: { voc_id: "voc-001", interpretation: "n. 苹果", tags: ["考研", "托福"], status: "PUBLISHED" } },
         response: { data: { interpretation: { id: "i-new", interpretation: "n. 苹果", tags: ["考研", "托福"], status: "PUBLISHED" } } },
       },
@@ -341,7 +341,7 @@ describe("interp", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/interpretations",
+        path: "/open/api/v1/memo/interpretations",
         query: { voc_id: "voc-001" },
         response: { data: { interpretations: [{ id: "i1", interpretation: "test", tags: [], status: "PUBLISHED" }] } },
       },
@@ -358,7 +358,7 @@ describe("phrase", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/phrases",
+        path: "/open/api/v1/memo/phrases",
         query: { voc_id: "voc-001" },
         response: { data: { phrases: [{ id: "p1", phrase: "Hello world", interpretation: "你好世界", origin: "book", status: "PUBLISHED" }] } },
       },
@@ -371,13 +371,13 @@ describe("phrase", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "hello" },
         response: { data: { voc: { id: "voc-h", spelling: "hello" } } },
       },
       {
         method: "POST",
-        path: "/open/api/v1/phrases",
+        path: "/open/api/v1/memo/phrases",
         body: { phrase: { voc_id: "voc-h", phrase: "Hello", interpretation: "你好", tags: [], origin: "book" } },
         response: { data: { phrase: { id: "p-new", phrase: "Hello", interpretation: "你好", origin: "book", status: "PUBLISHED" } } },
       },
@@ -396,7 +396,7 @@ describe("notepad", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/notepads",
+        path: "/open/api/v1/memo/notepads",
         response: { notepads: [{ id: "np1", title: "My Notepad", brief: "test", status: "PUBLISHED" }] },
       },
     ]);
@@ -409,7 +409,7 @@ describe("notepad", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/notepads/np1",
+        path: "/open/api/v1/memo/notepads/np1",
         response: { notepad: { id: "np1", title: "Detailed", content: "Content here", brief: "Brief", tags: [], status: "PUBLISHED" } },
       },
     ]);
@@ -421,7 +421,7 @@ describe("notepad", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/notepads",
+        path: "/open/api/v1/memo/notepads",
         body: { notepad: { status: "PUBLISHED", content: "Content", title: "Title", brief: "Brief", tags: ["tag1", "tag2"] } },
         response: { notepad: { id: "np-new", title: "Title", content: "Content", brief: "Brief", tags: ["tag1", "tag2"], status: "PUBLISHED" } },
       },
@@ -440,14 +440,15 @@ describe("study progress", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/study/get_study_progress",
+        path: "/open/api/v1/memo/study/get_study_progress",
         body: {},
-        response: { data: { progress: { finished: 50, total: 100, study_time_ms: 3600000 } } },
+        response: { data: { progress: { finished: 50, total: 100, study_time: 3600000 } } },
       },
     ]);
     const { stdout } = await runOk(["study", "progress"]);
     assert.ok(stdout.includes("50"), stdout);
     assert.ok(stdout.includes("100"), stdout);
+    assert.ok(stdout.includes("3600000"), stdout);
   });
 });
 
@@ -456,7 +457,7 @@ describe("study today", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/study/get_today_items",
+        path: "/open/api/v1/memo/study/get_today_items",
         body: { voc_ids: [], spellings: [], limit: 50 },
         response: { data: { today_items: [{ voc_id: "v1", voc_spelling: "apple", order: 1, is_new: true, is_finished: false }] } },
       },
@@ -469,7 +470,7 @@ describe("study today", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/study/get_today_items",
+        path: "/open/api/v1/memo/study/get_today_items",
         body: { voc_ids: [], spellings: [], limit: 50, is_finished: true },
         response: { data: { today_items: [{ voc_id: "v1", voc_spelling: "done", order: 1, is_new: false, is_finished: true }] } },
       },
@@ -484,7 +485,7 @@ describe("study records", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/study/query_study_records",
+        path: "/open/api/v1/memo/study/query_study_records",
         body: { voc_ids: [], spellings: [], as_count: false, limit: 50 },
         response: { data: { records: [{ voc_id: "v1", voc_spelling: "apple", study_count: 5, next_study_date: "2025-01-01" }] } },
       },
@@ -498,13 +499,27 @@ describe("study records", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/study/query_study_records",
+        path: "/open/api/v1/memo/study/query_study_records",
         body: { voc_ids: [], spellings: [], as_count: true, limit: 50 },
         response: { data: { count: 42 } },
       },
     ]);
     const { stdout } = await runOk(["study", "records", "-c"]);
     assert.ok(stdout.includes("42"), stdout);
+  });
+
+  it("filters by sticking tag", async () => {
+    setMock([
+      {
+        method: "POST",
+        path: "/open/api/v1/memo/study/query_study_records",
+        body: { voc_ids: [], spellings: [], tags: ["STICKING"], as_count: false, limit: 50 },
+        response: { data: { records: [{ voc_id: "v1", voc_spelling: "apple", study_count: 5, next_study_date: "2025-01-01", tags: ["STICKING"] }], count: 1 } },
+      },
+    ]);
+    const { stdout } = await runOk(["study", "records", "-t", "STICKING"]);
+    assert.ok(stdout.includes("apple"), stdout);
+    assert.ok(stdout.includes("STICKING"), stdout);
   });
 });
 
@@ -513,13 +528,13 @@ describe("study add", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/vocabulary/query",
+        path: "/open/api/v1/memo/vocabulary/query",
         body: { spellings: ["apple", "banana"], ids: [] },
         response: { data: { voc: [{ id: "v1", spelling: "apple" }, { id: "v2", spelling: "banana" }] } },
       },
       {
         method: "POST",
-        path: "/open/api/v1/study/add_words",
+        path: "/open/api/v1/memo/study/add_words",
         body: { words: [{ id: "v1" }, { id: "v2" }], advance: false },
         response: { data: { added_count: 2 } },
       },
@@ -532,7 +547,7 @@ describe("study add", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/study/add_words",
+        path: "/open/api/v1/memo/study/add_words",
         body: { words: [{ id: "v1" }, { id: "v2" }], advance: false },
         response: { data: { added_count: 2 } },
       },
@@ -549,7 +564,7 @@ describe("global options", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "apple" },
         response: { data: { voc: { id: "v1", spelling: "apple" } } },
       },
@@ -563,7 +578,7 @@ describe("global options", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "apple" },
         response: { data: { voc: { id: "v1", spelling: "apple" } } },
       },
@@ -581,7 +596,7 @@ describe("global options", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "test" },
         response: { data: { voc: { id: "v1", spelling: "test" } } },
       },
@@ -594,7 +609,7 @@ describe("global options", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "apple" },
         response: { data: { voc: { id: "v1", spelling: "apple" } } },
       },
@@ -612,7 +627,7 @@ describe("token resolution", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "test" },
         response: { data: { voc: { id: "v1", spelling: "test" } } },
       },
@@ -625,7 +640,7 @@ describe("token resolution", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "test" },
         response: { data: { voc: { id: "v1", spelling: "test" } } },
       },
@@ -642,7 +657,7 @@ describe("stdin piping", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "stdin-test" },
         response: { data: { voc: { id: "s1", spelling: "stdin-test" } } },
       },
@@ -655,7 +670,7 @@ describe("stdin piping", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/vocabulary/query",
+        path: "/open/api/v1/memo/vocabulary/query",
         body: { spellings: ["a", "b"] },
         response: { data: { voc: [] } },
       },
@@ -668,7 +683,7 @@ describe("stdin piping", () => {
     setMock([
       {
         method: "POST",
-        path: "/open/api/v1/notes",
+        path: "/open/api/v1/memo/notes",
         body: { note: { voc_id: "v1", note_type: "谐音", note: "stdin note" } },
         response: { data: { note: { id: "ns", note_type: "谐音", note: "stdin note", status: "PUBLISHED" } } },
       },
@@ -683,7 +698,7 @@ describe("stdin piping", () => {
     setMock([
       {
         method: "DELETE",
-        path: "/open/api/v1/notes/from-stdin",
+        path: "/open/api/v1/memo/notes/from-stdin",
         response: {},
       },
     ]);
@@ -701,7 +716,7 @@ describe("error handling", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "error" },
         response: { errors: [{ code: "NOT_FOUND", message: "单词不存在" }] },
       },
@@ -714,7 +729,7 @@ describe("error handling", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "test" },
         status: 401,
         response: {},
@@ -728,7 +743,7 @@ describe("error handling", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "test" },
         status: 404,
         response: {},
@@ -746,7 +761,7 @@ describe("command aliases", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/vocabulary",
+        path: "/open/api/v1/memo/vocabulary",
         query: { spelling: "alias" },
         response: { data: { voc: { id: "va", spelling: "alias" } } },
       },
@@ -759,7 +774,7 @@ describe("command aliases", () => {
     setMock([
       {
         method: "GET",
-        path: "/open/api/v1/interpretations",
+        path: "/open/api/v1/memo/interpretations",
         query: { voc_id: "vx" },
         response: { data: { interpretations: [{ id: "ia", interpretation: "test", tags: [], status: "PUBLISHED" }] } },
       },
@@ -796,13 +811,15 @@ describe("no token", () => {
           ...process.env,
           MAIMEMO_API_MOCK: "1",
           MAIMEMO_API_MOCK_FILE: mockFile,
+          MAIMEMO_API_TOKEN: "",
+          MEMO_API_CONFIG_PATH: join(tmpdir(), "memo-api-e2e-nonexistent-config.json"),
         },
         timeout: 5000,
       });
       assert.fail("should have thrown");
     } catch (err: any) {
       const output = (err.stderr ?? "") + (err.stdout ?? "");
-      assert.ok(output.includes("Token") || err.code !== 0, `unexpected: ${output}`);
+      assert.ok(output.includes("缺少 API Token"), `unexpected: ${output}`);
     }
   });
 });

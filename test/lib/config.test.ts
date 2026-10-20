@@ -1,29 +1,30 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, writeFileSync, unlinkSync, existsSync, statSync } from "node:fs";
-import { homedir } from "node:os";
+import { readFileSync, writeFileSync, existsSync, statSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { getConfig, writeConfig } from "../../src/config.js";
 
-const CONFIG_PATH = join(homedir(), ".config", "memo-api.json");
-let originalContent: string | null = null;
+let tmpDir: string;
+let CONFIG_PATH: string;
+let savedConfigPath: string | undefined;
 
 describe("config", () => {
   beforeEach(() => {
-    try {
-      originalContent = readFileSync(CONFIG_PATH, "utf-8");
-    } catch {
-      originalContent = null;
-    }
-    try { unlinkSync(CONFIG_PATH); } catch { /* ignore */ }
-    try { unlinkSync(CONFIG_PATH + ".tmp"); } catch { /* ignore */ }
+    savedConfigPath = process.env["MEMO_API_CONFIG_PATH"];
+    tmpDir = mkdtempSync(join(tmpdir(), "memo-api-config-test-"));
+    CONFIG_PATH = join(tmpDir, "memo-api.json");
+    process.env["MEMO_API_CONFIG_PATH"] = CONFIG_PATH;
   });
 
   afterEach(() => {
-    try { unlinkSync(CONFIG_PATH); } catch { /* ignore */ }
-    try { unlinkSync(CONFIG_PATH + ".tmp"); } catch { /* ignore */ }
-    if (originalContent) {
-      writeFileSync(CONFIG_PATH, originalContent);
+    if (savedConfigPath === undefined) {
+      delete process.env["MEMO_API_CONFIG_PATH"];
+    } else {
+      process.env["MEMO_API_CONFIG_PATH"] = savedConfigPath;
+    }
+    if (tmpDir) {
+      rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 

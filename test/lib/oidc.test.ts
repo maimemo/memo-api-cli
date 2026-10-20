@@ -1,12 +1,11 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { MockAgent, setGlobalDispatcher, getGlobalDispatcher } from "undici";
-import { writeFileSync, unlinkSync, mkdirSync } from "node:fs";
-import { homedir } from "node:os";
+import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { refreshToken, getUserInfo } from "../../src/lib/oidc.js";
 
-const CONFIG_PATH = join(homedir(), ".config", "memo-api.json");
 const OIDC_ORIGIN = "https://accounts.maimemo.com";
 
 const MOCK_OIDC_CONFIG = {
@@ -20,20 +19,31 @@ let mockAgent: MockAgent;
 let originalDispatcher: ReturnType<typeof getGlobalDispatcher>;
 
 describe("refreshToken", () => {
+  let tmpDir: string;
+  let CONFIG_PATH: string;
+  let savedConfigPath: string | undefined;
+
   beforeEach(() => {
     originalDispatcher = getGlobalDispatcher();
     mockAgent = new MockAgent();
     mockAgent.disableNetConnect();
     setGlobalDispatcher(mockAgent);
-    try { unlinkSync(CONFIG_PATH); } catch { /* ignore */ }
-    try { unlinkSync(CONFIG_PATH + ".tmp"); } catch { /* ignore */ }
-    mkdirSync(join(homedir(), ".config"), { recursive: true });
+    savedConfigPath = process.env["MEMO_API_CONFIG_PATH"];
+    tmpDir = mkdtempSync(join(tmpdir(), "memo-api-oidc-test-"));
+    CONFIG_PATH = join(tmpDir, "memo-api.json");
+    process.env["MEMO_API_CONFIG_PATH"] = CONFIG_PATH;
   });
 
   afterEach(() => {
     setGlobalDispatcher(originalDispatcher);
-    try { unlinkSync(CONFIG_PATH); } catch { /* ignore */ }
-    try { unlinkSync(CONFIG_PATH + ".tmp"); } catch { /* ignore */ }
+    if (savedConfigPath === undefined) {
+      delete process.env["MEMO_API_CONFIG_PATH"];
+    } else {
+      process.env["MEMO_API_CONFIG_PATH"] = savedConfigPath;
+    }
+    if (tmpDir) {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
   });
 
   it("refreshes access token and writes new at to config", async () => {

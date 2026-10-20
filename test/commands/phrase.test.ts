@@ -38,11 +38,11 @@ describe("phrase commands (integration)", () => {
 
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/phrases/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/phrases/, method: "GET" })
         .reply(200, wrap({ phrases }));
 
       const res = await api<{ phrases: typeof phrases }>(
-        "/api/v1/phrases",
+        "/api/v1/memo/phrases",
         { method: "GET", query: { voc_id: "voc123" } },
         "token",
       );
@@ -54,11 +54,11 @@ describe("phrase commands (integration)", () => {
     it("returns empty list when no phrases", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/phrases/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/phrases/, method: "GET" })
         .reply(200, wrap({ phrases: [] }));
 
       const res = await api<{ phrases: Array<Record<string, unknown>> }>(
-        "/api/v1/phrases",
+        "/api/v1/memo/phrases",
         { method: "GET", query: { voc_id: "nonexist" } },
         "token",
       );
@@ -71,7 +71,7 @@ describe("phrase commands (integration)", () => {
     it("creates a phrase", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/phrases", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/phrases", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.equal(body.phrase?.phrase, "Hello world");
@@ -99,7 +99,7 @@ describe("phrase commands (integration)", () => {
           origin: string;
         };
       }>(
-        "/api/v1/phrases",
+        "/api/v1/memo/phrases",
         {
           method: "POST",
           body: {
@@ -121,7 +121,7 @@ describe("phrase commands (integration)", () => {
     it("creates a phrase with empty tags and origin", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/phrases", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/phrases", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.deepEqual(body.phrase?.tags, []);
@@ -148,7 +148,7 @@ describe("phrase commands (integration)", () => {
           origin: string;
         };
       }>(
-        "/api/v1/phrases",
+        "/api/v1/memo/phrases",
         {
           method: "POST",
           body: {
@@ -172,7 +172,7 @@ describe("phrase commands (integration)", () => {
     it("updates a phrase", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/phrases/p1", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/phrases/p1", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.equal(body.phrase?.phrase, "updated phrase");
@@ -199,7 +199,7 @@ describe("phrase commands (integration)", () => {
           status: string;
         };
       }>(
-        "/api/v1/phrases/p1",
+        "/api/v1/memo/phrases/p1",
         {
           method: "POST",
           body: {
@@ -222,10 +222,10 @@ describe("phrase commands (integration)", () => {
     it("deletes a phrase", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/phrases/p1", method: "DELETE" })
+        .intercept({ path: "/open/api/v1/memo/phrases/p1", method: "DELETE" })
         .reply(200, wrap({}));
 
-      const res = await api<object>("/api/v1/phrases/p1", { method: "DELETE" }, "token");
+      const res = await api<object>("/api/v1/memo/phrases/p1", { method: "DELETE" }, "token");
       assert.deepEqual(res, {});
     });
   });

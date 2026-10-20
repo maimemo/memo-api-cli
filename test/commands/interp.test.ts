@@ -30,11 +30,11 @@ describe("interp commands (integration)", () => {
 
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/interpretations/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/interpretations/, method: "GET" })
         .reply(200, wrap({ interpretations: interps }));
 
       const res = await api<{ interpretations: typeof interps }>(
-        "/api/v1/interpretations",
+        "/api/v1/memo/interpretations",
         { method: "GET", query: { voc_id: "voc123" } },
         "token",
       );
@@ -46,11 +46,11 @@ describe("interp commands (integration)", () => {
     it("returns empty list when no interpretations", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/interpretations/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/interpretations/, method: "GET" })
         .reply(200, wrap({ interpretations: [] }));
 
       const res = await api<{ interpretations: Array<Record<string, unknown>> }>(
-        "/api/v1/interpretations",
+        "/api/v1/memo/interpretations",
         { method: "GET", query: { voc_id: "nonexist" } },
         "token",
       );
@@ -63,7 +63,7 @@ describe("interp commands (integration)", () => {
     it("creates an interpretation", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/interpretations", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/interpretations", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.equal(body.interpretation?.interpretation, "n. 苹果");
@@ -80,7 +80,7 @@ describe("interp commands (integration)", () => {
       const res = await api<{
         interpretation: { id: string; interpretation: string; tags: string[]; status: string };
       }>(
-        "/api/v1/interpretations",
+        "/api/v1/memo/interpretations",
         {
           method: "POST",
           body: {
@@ -101,7 +101,7 @@ describe("interp commands (integration)", () => {
     it("creates an interpretation with empty tags", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/interpretations", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/interpretations", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.deepEqual(body.interpretation?.tags, []);
@@ -118,7 +118,7 @@ describe("interp commands (integration)", () => {
       const res = await api<{
         interpretation: { id: string; interpretation: string; tags: string[]; status: string };
       }>(
-        "/api/v1/interpretations",
+        "/api/v1/memo/interpretations",
         {
           method: "POST",
           body: {
@@ -141,7 +141,7 @@ describe("interp commands (integration)", () => {
     it("updates an interpretation", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/interpretations/i1", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/interpretations/i1", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.equal(body.interpretation?.interpretation, "updated interp");
@@ -158,7 +158,7 @@ describe("interp commands (integration)", () => {
       const res = await api<{
         interpretation: { id: string; interpretation: string; tags: string[]; status: string };
       }>(
-        "/api/v1/interpretations/i1",
+        "/api/v1/memo/interpretations/i1",
         {
           method: "POST",
           body: {
@@ -180,10 +180,10 @@ describe("interp commands (integration)", () => {
     it("deletes an interpretation", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/interpretations/i1", method: "DELETE" })
+        .intercept({ path: "/open/api/v1/memo/interpretations/i1", method: "DELETE" })
         .reply(200, wrap({}));
 
-      const res = await api<object>("/api/v1/interpretations/i1", { method: "DELETE" }, "token");
+      const res = await api<object>("/api/v1/memo/interpretations/i1", { method: "DELETE" }, "token");
       assert.deepEqual(res, {});
     });
   });

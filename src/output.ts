@@ -69,7 +69,7 @@ export function printInfo(message: string): void {
 
 function flattenValue(v: unknown): string {
   if (v === null || v === undefined) return "";
-  if (Array.isArray(v)) return JSON.stringify(v);
+  if (Array.isArray(v)) return v.length ? JSON.stringify(v) : "";
   if (typeof v === "object") return JSON.stringify(v);
   return String(v);
 }
@@ -100,7 +100,7 @@ function colorizeBoolean(value: string): string {
 function toDisplayValue(v: unknown, colKey: string): string {
   const flat = flattenValue(v);
   if (!flat) return flat;
-  if (colKey.endsWith("time") || colKey.endsWith("date")) return formatTime(flat);
+  if ((colKey.endsWith("time") || colKey.endsWith("date")) && !/^\d+$/.test(flat)) return formatTime(flat);
   if (colKey === "is_new" || colKey === "is_finished") return colorizeBoolean(flat);
   if (colKey === "status" || colKey === "last_response" || colKey === "first_response") return colorizeStatus(flat);
   return flat;

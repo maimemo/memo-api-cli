@@ -35,7 +35,7 @@ export async function api<T>(
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   if (verbose) {
-    process.stderr.write(`\n> ${options.method ?? "GET"} ${url.pathname}${url.search ? "?" + url.search : ""}\n`);
+    process.stderr.write(`\n> ${options.method ?? "GET"} ${url.pathname}${url.search}\n`);
     process.stderr.write(`> Host: ${url.host}\n`);
     process.stderr.write(`> Authorization: Bearer ${token.slice(0, 8)}...\n`);
     if (options.body !== undefined) {
@@ -116,6 +116,26 @@ async function mockApi<T>(
   options: FetchOptions,
 ): Promise<T> {
   const url = new URL(path.replace(/^\//, ""), BASE_URL);
+  if (options.query) {
+    for (const [key, value] of Object.entries(options.query)) {
+      url.searchParams.set(key, value);
+    }
+  }
+  if (verbose) {
+    process.stderr.write(
+      `\n> ${options.method ?? "GET"} ${url.pathname}${url.search}\n`,
+    );
+    process.stderr.write(`> Host: ${url.host}\n`);
+    process.stderr.write(`> Authorization: Bearer ********\n`);
+    if (options.body !== undefined) {
+      const bodyStr = JSON.stringify(options.body);
+      process.stderr.write(`> Content-Type: application/json\n`);
+      process.stderr.write(
+        `> Body: ${bodyStr.length > 200 ? bodyStr.slice(0, 200) + "..." : bodyStr}\n`,
+      );
+    }
+  }
+
   const ep = findEndpoint(
     options.method ?? "GET",
     url.pathname,
@@ -126,17 +146,6 @@ async function mockApi<T>(
   const status = ep.status ?? 200;
 
   if (verbose) {
-    process.stderr.write(
-      `\n> ${options.method ?? "GET"} ${url.pathname}${url.search ? "?" + url.search : ""}\n`,
-    );
-    process.stderr.write(`> Host: ${url.host}\n`);
-    process.stderr.write(`> Authorization: Bearer ********\n`);
-    if (options.body !== undefined) {
-      const bodyStr = JSON.stringify(options.body);
-      process.stderr.write(
-        `> Body: ${bodyStr.length > 200 ? bodyStr.slice(0, 200) + "..." : bodyStr}\n`,
-      );
-    }
     process.stderr.write(`< HTTP ${status}\n`);
   }
 
@@ -177,8 +186,10 @@ function formatError(e: unknown): string {
   if (typeof e !== "object" || e === null) return "错误: " + String(e);
   const obj = e as Record<string, unknown>;
   const code = obj.code ? String(obj.code) + ": " : "";
-  const msg = obj.message ? String(obj.message) : JSON.stringify(e);
-  return "错误: " + code + msg;
+  const rawMsg = obj.message || obj.msg;
+  const msg = rawMsg ? String(rawMsg) : JSON.stringify(e);
+  const info = obj.info ? `: ${String(obj.info)}` : "";
+  return "错误: " + code + msg + info;
 }
 
 async function printResponseErrors(res: Response): Promise<void> {

@@ -13,6 +13,8 @@ CLI 按以下优先级选择鉴权方式：
 3. `~/.config/memo-api.json` 中的 `apiToken` 字段（老式 API Token）
 4. `~/.config/memo-api.json` 中的 OIDC `at` 字段（自动刷新）
 
+配置文件默认路径为 `~/.config/memo-api.json`，可通过 `MEMO_API_CONFIG_PATH` 环境变量覆盖。
+
 用户提供老式 Token 时，优先使用老式 Token，不触发 OIDC 流程。
 
 ---
@@ -40,7 +42,7 @@ memo-api auth <action>
 6. 校验 `state`，用 `code` + `code_verifier` 向 token endpoint 换取 `access_token`、`refresh_token`、`id_token`
 7. openid-client 自动验证 `id_token`（签名、issuer、audience、nonce），从中提取 `sub` 和 `name`
 8. 浏览器显示 HTML 页面："登录成功，可以关闭页面"
-9. 将 `at` 和 `rt` 原子写入 `~/.config/memo-api.json`（先写 `.tmp` 再 `rename`，`chmod 0600`）
+9. 将 `at` 和 `rt` 原子写入配置文件（默认 `~/.config/memo-api.json`，先写 `.tmp` 再 `rename`，`chmod 0600`）
 10. stderr 输出 `printSuccess("登录成功: <name> (<uid>)")`；若 `-O json` 则 stdout 输出 `{"uid":"...", "name":"..."}`
 
 **边界行为**：
@@ -75,7 +77,7 @@ const OIDC_SCOPE = "openid profile offline_access open.memo.content open.memo.st
 
 ## 配置文件
 
-路径：`~/.config/memo-api.json`
+路径：`~/.config/memo-api.json`（可通过 `MEMO_API_CONFIG_PATH` 环境变量覆盖）
 权限：0600
 
 ### 结构

@@ -1,20 +1,25 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { resolveToken } from "../../src/lib/auth.js";
-import { writeFileSync, mkdirSync, unlinkSync } from "node:fs";
-import { homedir } from "node:os";
+import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const CONFIG_PATH = join(homedir(), ".config", "memo-api.json");
+let tmpDir: string;
+let CONFIG_PATH: string;
 
 describe("resolveToken", () => {
   let savedEnv: string | undefined;
+  let savedConfigPath: string | undefined;
   let originalExit: typeof process.exit;
 
   beforeEach(() => {
     savedEnv = process.env["MAIMEMO_API_TOKEN"];
+    savedConfigPath = process.env["MEMO_API_CONFIG_PATH"];
     originalExit = process.exit;
-    try { unlinkSync(CONFIG_PATH); } catch { /* ignore */ }
+    tmpDir = mkdtempSync(join(tmpdir(), "memo-api-auth-test-"));
+    CONFIG_PATH = join(tmpDir, "memo-api.json");
+    process.env["MEMO_API_CONFIG_PATH"] = CONFIG_PATH;
   });
 
   afterEach(() => {
@@ -24,7 +29,14 @@ describe("resolveToken", () => {
       delete process.env["MAIMEMO_API_TOKEN"];
     }
     process.exit = originalExit;
-    try { unlinkSync(CONFIG_PATH); } catch { /* ignore */ }
+    if (savedConfigPath === undefined) {
+      delete process.env["MEMO_API_CONFIG_PATH"];
+    } else {
+      process.env["MEMO_API_CONFIG_PATH"] = savedConfigPath;
+    }
+    if (tmpDir) {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
   });
 
   it("uses flag token as highest priority", async () => {
@@ -43,7 +55,6 @@ describe("resolveToken", () => {
 
   it("falls back to config file apiToken", async () => {
     delete process.env["MAIMEMO_API_TOKEN"];
-    mkdirSync(join(homedir(), ".config"), { recursive: true });
     writeFileSync(CONFIG_PATH, JSON.stringify({ apiToken: "config-token" }));
     const result = await resolveToken({});
     assert.equal(result.token, "config-token");
@@ -72,7 +83,6 @@ describe("resolveToken", () => {
     delete process.env["MAIMEMO_API_TOKEN"];
     const now = Math.floor(Date.now() / 1000);
     const futureExpire = now + 3600;
-    mkdirSync(join(homedir(), ".config"), { recursive: true });
     writeFileSync(CONFIG_PATH, JSON.stringify({
       at: { token: "oidc-access-token", expireAt: futureExpire },
       rt: { token: "oidc-refresh-token", expireAt: futureExpire + 86400 },
@@ -86,7 +96,6 @@ describe("resolveToken", () => {
   it("exits when OIDC at and rt are both expired", async () => {
     delete process.env["MAIMEMO_API_TOKEN"];
     const pastExpire = Math.floor(Date.now() / 1000) - 3600;
-    mkdirSync(join(homedir(), ".config"), { recursive: true });
     writeFileSync(CONFIG_PATH, JSON.stringify({
       at: { token: "oidc-access-token", expireAt: pastExpire },
       rt: { token: "oidc-refresh-token", expireAt: pastExpire },
@@ -111,7 +120,6 @@ describe("resolveToken", () => {
     process.env["MAIMEMO_API_TOKEN"] = "env-token";
     const now = Math.floor(Date.now() / 1000);
     const futureExpire = now + 3600;
-    mkdirSync(join(homedir(), ".config"), { recursive: true });
     writeFileSync(CONFIG_PATH, JSON.stringify({
       apiToken: "config-token",
       at: { token: "oidc-token", expireAt: futureExpire },

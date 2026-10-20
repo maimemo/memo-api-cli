@@ -26,11 +26,11 @@ describe("voc commands (integration)", () => {
     it("fetches vocabulary by spelling", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/vocabulary/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/vocabulary/, method: "GET" })
         .reply(200, wrap({ voc: { id: "voc123", spelling: "apple" } }));
 
       const res = await api<{ voc?: { id: string; spelling: string } }>(
-        "/api/v1/vocabulary",
+        "/api/v1/memo/vocabulary",
         { method: "GET", query: { spelling: "apple" } },
         "token",
       );
@@ -42,11 +42,11 @@ describe("voc commands (integration)", () => {
     it("returns null voc when word not found", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/vocabulary/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/vocabulary/, method: "GET" })
         .reply(200, wrap({}));
 
       const res = await api<{ voc?: unknown }>(
-        "/api/v1/vocabulary",
+        "/api/v1/memo/vocabulary",
         { method: "GET", query: { spelling: "nonexist" } },
         "token",
       );
@@ -59,11 +59,11 @@ describe("voc commands (integration)", () => {
     it("queries by spellings", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/vocabulary/query", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/vocabulary/query", method: "POST" })
         .reply(200, wrap({ voc: [{ id: "v1", spelling: "a" }, { id: "v2", spelling: "b" }] }));
 
       const res = await api<{ voc: Array<{ id: string; spelling: string }> }>(
-        "/api/v1/vocabulary/query",
+        "/api/v1/memo/vocabulary/query",
         { method: "POST", body: { spellings: ["a", "b"], ids: [] } },
         "token",
       );
@@ -74,11 +74,11 @@ describe("voc commands (integration)", () => {
     it("queries by ids", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/vocabulary/query", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/vocabulary/query", method: "POST" })
         .reply(200, wrap({ voc: [{ id: "v1", spelling: "x" }] }));
 
       const res = await api<{ voc: Array<{ id: string }> }>(
-        "/api/v1/vocabulary/query",
+        "/api/v1/memo/vocabulary/query",
         { method: "POST", body: { spellings: [], ids: ["v1"] } },
         "token",
       );

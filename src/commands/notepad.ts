@@ -47,7 +47,7 @@ const listHandler = async (argv: NotepadListArgs) => {
   }
 
   const res = await api<{ notepads: Array<Record<string, unknown>> }>(
-    "/api/v1/notepads",
+    "/api/v1/memo/notepads",
     { method: "GET", query },
     token,
   );
@@ -76,7 +76,7 @@ const getHandler = async (argv: NotepadGetArgs) => {
   const token = (argv as any).token as string;
 
   const res = await api<GetNotepadResponse>(
-    `/api/v1/notepads/${argv.id}`,
+    `/api/v1/memo/notepads/${argv.id}`,
     { method: "GET" },
     token,
   );
@@ -138,7 +138,7 @@ const createHandler = async (argv: NotepadCreateArgs) => {
   }
 
   const res = await api<CreateNotepadResponse>(
-    "/api/v1/notepads",
+    "/api/v1/memo/notepads",
     { method: "POST", body },
     token,
   );
@@ -209,7 +209,7 @@ const updateHandler = async (argv: NotepadUpdateArgs) => {
   }
 
   const res = await api<UpdateNotepadResponse>(
-    `/api/v1/notepads/${resolvedId}`,
+    `/api/v1/memo/notepads/${resolvedId}`,
     { method: "POST", body },
     token,
   );
@@ -248,7 +248,7 @@ const deleteHandler = async (argv: NotepadDeleteArgs) => {
   const ok = await confirmDelete("notepad", resolvedId, argv.force);
   if (!ok) process.exit(0);
 
-  await api<object>(`/api/v1/notepads/${resolvedId}`, { method: "DELETE" }, token);
+  await api<object>(`/api/v1/memo/notepads/${resolvedId}`, { method: "DELETE" }, token);
   printSuccess("已删除");
 };
 

@@ -82,6 +82,9 @@ memo-api study progress
 # 添加单词到学习规划
 memo-api study add -w hello -w world
 
+# 查询顽固单词（STICKING）学习记录
+memo-api study records -t STICKING
+
 # 管道输入
 echo '{"spelling":"apple"}' | memo-api voc get
 ```
@@ -115,10 +118,10 @@ memo-api note list --word=apple --fields=-status
 
 ```bash
 # 重复 flag
-memo-api study add --voc-id v1 --voc-id v2 --voc-id v3
+memo-api study add --id v1 --id v2 --id v3
 
 # stdin 换行（- 表示从 stdin 读取）
-echo -e "v1\nv2\nv3" | memo-api study add --voc-id -
+echo -e "v1\nv2\nv3" | memo-api study add --id -
 ```
 
 **调试**：使用 `--verbose` 查看完整的 HTTP 请求和响应。

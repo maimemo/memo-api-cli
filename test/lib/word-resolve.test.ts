@@ -22,7 +22,7 @@ describe("resolveVocId", () => {
     mockAgent
       .get("https://open.maimemo.com")
       .intercept({
-        path: /\/open\/api\/v1\/vocabulary/,
+        path: /\/open\/api\/v1\/memo\/vocabulary/,
         method: "GET",
       })
       .reply(200, { data: { voc: { id: "voc123", spelling: "apple" } }, errors: [], success: true });

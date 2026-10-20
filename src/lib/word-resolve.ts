@@ -10,7 +10,7 @@ export async function resolveVocId(
   token: string,
 ): Promise<string> {
   const res = await api<GetVocabularyResponse>(
-    "/api/v1/vocabulary",
+    "/api/v1/memo/vocabulary",
     { method: "GET", query: { spelling } },
     token,
   );
@@ -28,7 +28,7 @@ export async function resolveVocIdsBySpellings(
   token: string,
 ): Promise<string[]> {
   const res = await api<ListVocabularyResponse>(
-    "/api/v1/vocabulary/query",
+    "/api/v1/memo/vocabulary/query",
     { method: "POST", body: { spellings, ids: [] } },
     token,
   );

@@ -31,7 +31,7 @@ describe("notepad commands (integration)", () => {
 
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notepads/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notepads/, method: "GET" })
         .reply(200, (opts: { path: string }) => {
           assert.ok(opts.path.includes("limit=10"));
           assert.ok(opts.path.includes("offset=0"));
@@ -39,7 +39,7 @@ describe("notepad commands (integration)", () => {
         });
 
       const res = await api<{ notepads: typeof notepads }>(
-        "/api/v1/notepads",
+        "/api/v1/memo/notepads",
         { method: "GET", query: { limit: "10", offset: "0" } },
         "token",
       );
@@ -51,7 +51,7 @@ describe("notepad commands (integration)", () => {
     it("fetches notepads with custom limit", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: /\/open\/api\/v1\/notepads/, method: "GET" })
+        .intercept({ path: /\/open\/api\/v1\/memo\/notepads/, method: "GET" })
         .reply(200, (opts: { path: string }) => {
           assert.ok(opts.path.includes("limit=5"));
           assert.ok(opts.path.includes("offset=10"));
@@ -59,7 +59,7 @@ describe("notepad commands (integration)", () => {
         });
 
       const res = await api<{ notepads: Array<Record<string, unknown>> }>(
-        "/api/v1/notepads",
+        "/api/v1/memo/notepads",
         { method: "GET", query: { limit: "5", offset: "10" } },
         "token",
       );
@@ -72,7 +72,7 @@ describe("notepad commands (integration)", () => {
     it("fetches a single notepad", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/notepads/np1", method: "GET" })
+        .intercept({ path: "/open/api/v1/memo/notepads/np1", method: "GET" })
         .reply(200, wrap({
           notepad: {
             id: "np1",
@@ -90,7 +90,7 @@ describe("notepad commands (integration)", () => {
       const res = await api<{
         notepad: { id: string; title: string; content: string; brief: string; tags: string[]; status: string };
       }>(
-        "/api/v1/notepads/np1",
+        "/api/v1/memo/notepads/np1",
         { method: "GET" },
         "token",
       );
@@ -102,7 +102,7 @@ describe("notepad commands (integration)", () => {
     it("returns notepad with content field", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/notepads/np2", method: "GET" })
+        .intercept({ path: "/open/api/v1/memo/notepads/np2", method: "GET" })
         .reply(200, wrap({
           notepad: {
             id: "np2",
@@ -120,7 +120,7 @@ describe("notepad commands (integration)", () => {
       const res = await api<{
         notepad: { id: string; title: string; content: string; tags: string[]; status: string };
       }>(
-        "/api/v1/notepads/np2",
+        "/api/v1/memo/notepads/np2",
         { method: "GET" },
         "token",
       );
@@ -134,7 +134,7 @@ describe("notepad commands (integration)", () => {
     it("creates a notepad", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/notepads", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/notepads", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.equal(body.notepad?.title, "新笔记");
@@ -164,7 +164,7 @@ describe("notepad commands (integration)", () => {
           status: string;
         };
       }>(
-        "/api/v1/notepads",
+        "/api/v1/memo/notepads",
         {
           method: "POST",
           body: {
@@ -187,7 +187,7 @@ describe("notepad commands (integration)", () => {
     it("creates a notepad with UNPUBLISHED status", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/notepads", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/notepads", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.equal(body.notepad?.status, "UNPUBLISHED");
@@ -209,7 +209,7 @@ describe("notepad commands (integration)", () => {
       const res = await api<{
         notepad: { id: string; status: string };
       }>(
-        "/api/v1/notepads",
+        "/api/v1/memo/notepads",
         {
           method: "POST",
           body: {
@@ -233,7 +233,7 @@ describe("notepad commands (integration)", () => {
     it("updates a notepad", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/notepads/np1", method: "POST" })
+        .intercept({ path: "/open/api/v1/memo/notepads/np1", method: "POST" })
         .reply(200, (opts: { body?: string }) => {
           const body = opts.body ? JSON.parse(opts.body) : {};
           assert.equal(body.notepad?.title, "更新后的标题");
@@ -261,7 +261,7 @@ describe("notepad commands (integration)", () => {
           status: string;
         };
       }>(
-        "/api/v1/notepads/np1",
+        "/api/v1/memo/notepads/np1",
         {
           method: "POST",
           body: {
@@ -285,10 +285,10 @@ describe("notepad commands (integration)", () => {
     it("deletes a notepad", async () => {
       mockAgent
         .get("https://open.maimemo.com")
-        .intercept({ path: "/open/api/v1/notepads/np1", method: "DELETE" })
+        .intercept({ path: "/open/api/v1/memo/notepads/np1", method: "DELETE" })
         .reply(200, wrap({}));
 
-      const res = await api<object>("/api/v1/notepads/np1", { method: "DELETE" }, "token");
+      const res = await api<object>("/api/v1/memo/notepads/np1", { method: "DELETE" }, "token");
       assert.deepEqual(res, {});
     });
   });
