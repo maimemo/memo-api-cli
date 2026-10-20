@@ -36,9 +36,9 @@ memo-api auth <action>
 
 1. 通过 openid-client 从 `issuer/.well-known/openid-configuration` 拉取 OIDC metadata（authorization_endpoint、token_endpoint）
 2. 生成 PKCE `code_verifier` + `code_challenge`（S256）和 `state`（openid-client 自动处理）
-3. 在 `localhost:18884` 启动临时 HTTP server 等待回调
+3. 在 `127.0.0.1:18884` 启动临时 HTTP server 等待回调
 4. 构建 authorization URL，打开系统浏览器；若浏览器打开失败则在 stderr 打印 URL 让用户手动打开
-5. 用户在浏览器完成授权后，redirect 到 `http://localhost:18884/callback?code=...&state=...`
+5. 用户在浏览器完成授权后，redirect 到 `http://127.0.0.1:18884/callback?code=...&state=...`
 6. 校验 `state`，用 `code` + `code_verifier` 向 token endpoint 换取 `access_token`、`refresh_token`、`id_token`
 7. openid-client 自动验证 `id_token`（签名、issuer、audience、nonce），从中提取 `sub` 和 `name`
 8. 浏览器显示 HTML 页面："登录成功，可以关闭页面"
@@ -69,7 +69,7 @@ memo-api auth <action>
 ```ts
 const OIDC_CLIENT_ID = "6a2157c1fa31b7c875a8e4ba";
 const OIDC_ISSUER = "https://accounts.maimemo.com/oidc";
-const OIDC_REDIRECT_URI = "http://localhost:18884/callback";
+const OIDC_REDIRECT_URI = "http://127.0.0.1:18884/callback";
 const OIDC_SCOPE = "openid profile offline_access open.memo.content open.memo.study";
 ```
 

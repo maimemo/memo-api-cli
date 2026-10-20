@@ -10,7 +10,7 @@ import { printError, printInfo } from "../output.js";
 
 const OIDC_CLIENT_ID = "6a2157c1fa31b7c875a8e4ba";
 const OIDC_ISSUER = "https://accounts.maimemo.com/oidc";
-const OIDC_REDIRECT_URI = "http://localhost:18884/callback";
+const OIDC_REDIRECT_URI = "http://127.0.0.1:18884/callback";
 const OIDC_SCOPE = "openid profile offline_access open.memo.content open.memo.study";
 const CALLBACK_PORT = 18884;
 const LOGIN_TIMEOUT_MS = 10 * 60 * 1000;
@@ -123,7 +123,7 @@ export async function startLogin(): Promise<{
     }
 
     server = createServer((req: IncomingMessage, res: ServerResponse) => {
-      const reqUrl = new URL(req.url ?? "/", `http://localhost:${CALLBACK_PORT}`);
+      const reqUrl = new URL(req.url ?? "/", `http://127.0.0.1:${CALLBACK_PORT}`);
 
       if (reqUrl.pathname !== "/callback") {
         res.writeHead(404);
@@ -153,7 +153,7 @@ export async function startLogin(): Promise<{
         return;
       }
 
-      resolve({ callbackUrl: `http://localhost:${CALLBACK_PORT}${req.url}`, res });
+      resolve({ callbackUrl: `http://127.0.0.1:${CALLBACK_PORT}${req.url}`, res });
       clearTimeout(timeout);
       server!.close();
     });

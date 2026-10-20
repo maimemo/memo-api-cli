@@ -1,6 +1,6 @@
 {
   "name": "@maimemo/memo-api",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "墨墨开放 API 命令行工具",
   "license": "MIT",
   "author": "tjt@maimemo.com",
